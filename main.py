@@ -1,5 +1,6 @@
 from tkinter import *
 from tkinter import messagebox
+from tkinter.font import Font
 from tkinter.ttk import *
 from tkinter.messagebox import *
 from routines import *
@@ -61,7 +62,7 @@ def compute(path):
     Y = data['CDF']
 
     rootComp = Toplevel(root)
-    rootComp.geometry("200x300")
+    rootComp.geometry("250x500")
     rootComp.title("Models")
     
     # I THINK I SHOULD ALSO INCLUDE THE PARAMETER ESTIMATION INSIDE THESE FUNCTIONS ONLY
@@ -90,8 +91,8 @@ def compute(path):
             except:
                 messagebox.showinfo(title='Model Removal', message="Error occured while removing model")
 
-        param1Label = Label(rootPar, text="a")
-        param2Label = Label(rootPar, text="b")
+        param1Label = Label(rootPar, text="a (cummulative faults)")
+        param2Label = Label(rootPar, text="b (detection rate)")
         param1 = Entry(rootPar) # THIS IS PARAMETER 'a' FOR GO MODEL
         param2 = Entry(rootPar) # THIS IS PARAMETER 'b' FOR GO MODEL
         submitAndEstimate = Button(rootPar, text="Submit", command=_sub)
@@ -128,8 +129,8 @@ def compute(path):
             except:
                 messagebox.showinfo(title='Model Removal', message="Error occured while removing model")
 
-        param1Label = Label(rootPar, text="a")
-        param2Label = Label(rootPar, text="b")
+        param1Label = Label(rootPar, text="a (cummulative faults)")
+        param2Label = Label(rootPar, text="b (detection rate)")
         param1 = Entry(rootPar) # THIS IS PARAMETER 'a' FOR DELAYED S MODEL
         param2 = Entry(rootPar) # THIS IS PARAMETER 'b' FOR DELAYED S MODEL
         submitAndEstimate = Button(rootPar, text="Submit", command=_sub)
@@ -169,8 +170,8 @@ def compute(path):
             except:
                 messagebox.showinfo(title='Model Removal', message="Error occured while removing model")
 
-        param1Label = Label(rootPar, text="a")  # THIS IS PARAMETER 'a' FOR INFLECTION S MODEL
-        param2Label = Label(rootPar, text="b")  # THIS IS PARAMETER 'b' FOR INFLECTION S MODEL
+        param1Label = Label(rootPar, text="a (cummulative faults)")  # THIS IS PARAMETER 'a' FOR INFLECTION S MODEL
+        param2Label = Label(rootPar, text="b (detection rate)")  # THIS IS PARAMETER 'b' FOR INFLECTION S MODEL
         param3Label = Label(rootPar, text="\u03B2") #beta
         param1 = Entry(rootPar)
         param2 = Entry(rootPar)
@@ -215,7 +216,7 @@ def compute(path):
             except:
                 messagebox.showinfo(title='Model Removal', message="Error occured while removing model")
 
-        param1Label = Label(rootPar, text="a")      # THIS IS PARAMETER 'a' FOR YAMADA RAYLEIGH MODEL
+        param1Label = Label(rootPar, text="a (cummulative faults)")      # THIS IS PARAMETER 'a' FOR YAMADA RAYLEIGH MODEL
         param2Label = Label(rootPar, text="\u03B1") # THIS IS PARAMETER 'alpha' FOR YAMADA RAYLEIGH MODEL
         param3Label = Label(rootPar, text="\u03B2") # THIS IS PARAMETER 'beta' FOR YAMADA RAYLEIGH MODEL
         param4Label = Label(rootPar, text="\u03B3") # THIS IS PARAMETER 'gamma' FOR YAMADA RAYLEIGH MODEL
@@ -264,8 +265,8 @@ def compute(path):
             except:
                 messagebox.showinfo(title='Model Removal', message="Error occured while removing model")
 
-        param1Label = Label(rootPar, text="a")      # THIS IS PARAMETER 'a' FOR YAMADA IMPERFECT 1 MODEL
-        param2Label = Label(rootPar, text="b")      # THIS IS PARAMETER 'b' FOR YAMADA IMPERFECT 1 MODEL
+        param1Label = Label(rootPar, text="a (cummulative faults)")      # THIS IS PARAMETER 'a' FOR YAMADA IMPERFECT 1 MODEL
+        param2Label = Label(rootPar, text="b (detection rate)")      # THIS IS PARAMETER 'b' FOR YAMADA IMPERFECT 1 MODEL
         param3Label = Label(rootPar, text="\u03B1") # THIS IS PARAMETER 'alpha' FOR YAMADA IMPERFECT 1 MODEL
         param1 = Entry(rootPar)
         param2 = Entry(rootPar)
@@ -309,8 +310,8 @@ def compute(path):
             except:
                 messagebox.showinfo(title='Model Removal', message="Error occured while removing model")
 
-        param1Label = Label(rootPar, text="a")      # THIS IS PARAMETER 'a' FOR YAMADA IMPERFECT 1 MODEL
-        param2Label = Label(rootPar, text="b")      # THIS IS PARAMETER 'b' FOR YAMADA IMPERFECT 1 MODEL
+        param1Label = Label(rootPar, text="a (cummulative faults)")      # THIS IS PARAMETER 'a' FOR YAMADA IMPERFECT 1 MODEL
+        param2Label = Label(rootPar, text="b (detection rate)")      # THIS IS PARAMETER 'b' FOR YAMADA IMPERFECT 1 MODEL
         param3Label = Label(rootPar, text="\u03B1") # THIS IS PARAMETER 'alpha' FOR YAMADA IMPERFECT 1 MODEL
         param1 = Entry(rootPar)
         param2 = Entry(rootPar)
@@ -355,7 +356,7 @@ def compute(path):
             except:
                 messagebox.showinfo(title='Model Removal', message="Error occured while removing model")
 
-        param1Label = Label(rootPar, text="a")      # THIS IS PARAMETER 'a' FOR YAMADA RAYLEIGH MODEL
+        param1Label = Label(rootPar, text="a (cummulative faults)")      # THIS IS PARAMETER 'a' FOR YAMADA RAYLEIGH MODEL
         param2Label = Label(rootPar, text="\u03B1") # THIS IS PARAMETER 'alpha' FOR YAMADA RAYLEIGH MODEL
         param3Label = Label(rootPar, text="\u03B2") # THIS IS PARAMETER 'beta' FOR YAMADA RAYLEIGH MODEL
         param4Label = Label(rootPar, text="\u03B3") # THIS IS PARAMETER 'gamma' FOR YAMADA RAYLEIGH MODEL
@@ -406,8 +407,8 @@ def compute(path):
             except:
                 messagebox.showinfo(title='Model Removal', message="Error occured while removing model")
 
-        param1Label = Label(rootPar, text="a")      # THIS IS PARAMETER 'a' FOR YAMADA RAYLEIGH MODEL
-        param2Label = Label(rootPar, text="b")      # THIS IS PARAMETER 'b' FOR YAMADA RAYLEIGH MODEL
+        param1Label = Label(rootPar, text="a (cummulative faults)")      # THIS IS PARAMETER 'a' FOR YAMADA RAYLEIGH MODEL
+        param2Label = Label(rootPar, text="b (detection rate)")      # THIS IS PARAMETER 'b' FOR YAMADA RAYLEIGH MODEL
         param3Label = Label(rootPar, text="\u03B1") # THIS IS PARAMETER 'alpha' FOR YAMADA RAYLEIGH MODEL
         param4Label = Label(rootPar, text="\u03B2") # THIS IS PARAMETER 'beta' FOR YAMADA RAYLEIGH MODEL
         param5label = Label(rootPar, text="n")      # THIS IS PARAMETER 'n' FOR YAMADA RAYLEIGH MODEL
@@ -460,8 +461,8 @@ def compute(path):
             except:
                 messagebox.showinfo(title='Model Removal', message="Error occured while removing model")
 
-        param1Label = Label(rootPar, text="a")      # THIS IS PARAMETER 'a' FOR YAMADA RAYLEIGH MODEL
-        param2Label = Label(rootPar, text="b")      # THIS IS PARAMETER 'b' FOR YAMADA RAYLEIGH MODEL
+        param1Label = Label(rootPar, text="a (cummulative faults)")      # THIS IS PARAMETER 'a' FOR YAMADA RAYLEIGH MODEL
+        param2Label = Label(rootPar, text="b (detection rate)")      # THIS IS PARAMETER 'b' FOR YAMADA RAYLEIGH MODEL
         param3Label = Label(rootPar, text="\u03B1") # THIS IS PARAMETER 'alpha' FOR YAMADA RAYLEIGH MODEL
         param4Label = Label(rootPar, text="\u03B2") # THIS IS PARAMETER 'beta' FOR YAMADA RAYLEIGH MODEL
         param1 = Entry(rootPar)
@@ -511,8 +512,8 @@ def compute(path):
             except:
                 messagebox.showinfo(title='Model Removal', message="Error occured while removing model")
 
-        param1Label = Label(rootPar, text="a")      # THIS IS PARAMETER 'a' FOR YAMADA RAYLEIGH MODEL
-        param2Label = Label(rootPar, text="b")      # THIS IS PARAMETER 'b' FOR YAMADA RAYLEIGH MODEL
+        param1Label = Label(rootPar, text="a (cummulative faults)")      # THIS IS PARAMETER 'a' FOR YAMADA RAYLEIGH MODEL
+        param2Label = Label(rootPar, text="b (detection rate)")      # THIS IS PARAMETER 'b' FOR YAMADA RAYLEIGH MODEL
         param3Label = Label(rootPar, text="\u03B1") # THIS IS PARAMETER 'alpha' FOR YAMADA RAYLEIGH MODEL
         param4Label = Label(rootPar, text="\u03B2") # THIS IS PARAMETER 'beta' FOR YAMADA RAYLEIGH MODEL
         param5label = Label(rootPar, text="n")      # THIS IS PARAMETER 'n' FOR YAMADA RAYLEIGH MODEL
@@ -554,16 +555,16 @@ def compute(path):
     model10 = Button(rootComp, text="Chang et al\'s", command=lambda: changParamEst(changs))
 
     # ADDING PREVIOUSLY CREATED BUTTONS
-    model1.pack()
-    model2.pack()
-    model3.pack()
-    model4.pack()
-    model5.pack()
-    model6.pack()
-    model7.pack()
-    model8.pack()
-    model9.pack()
-    model10.pack()
+    model1.place(relx= 0.25, relwidth=0.5, relheight=0.1)
+    model2.place(relx= 0.25, rely=0.1, relwidth=0.5, relheight=0.1)
+    model3.place(relx= 0.25, rely=0.2, relwidth=0.5, relheight=0.1)
+    model4.place(relx= 0.25, rely=0.3, relwidth=0.5, relheight=0.1)
+    model5.place(relx= 0.25, rely=0.4, relwidth=0.5, relheight=0.1)
+    model6.place(relx= 0.25, rely=0.5, relwidth=0.5, relheight=0.1)
+    model7.place(relx= 0.25, rely=0.6, relwidth=0.5, relheight=0.1)
+    model8.place(relx= 0.25, rely=0.7, relwidth=0.5, relheight=0.1)
+    model9.place(relx= 0.25, rely=0.8, relwidth=0.5, relheight=0.1)
+    model10.place(relx= 0.25, rely=0.9, relwidth=0.5, relheight=0.1)
 
     rootComp.mainloop()
 
@@ -607,8 +608,8 @@ def display():
         rootDisp.mainloop()
     pass
 
-# THIS ROUTINE HERE IS TO CALCULATE RANK, BUT JUST A LOT MORE EFFICIENT IN PERFORMANCE AND BETTER LOOKING
-def computeR(path):
+# THIS ROUTINE HERE IS TO CALCULATE ALL CRITERIAS FOR ALL MODELS
+def computeC(path):
 
     data = []
     # CHECKING IF MODEL PARAMETERS ARE EVEN ENTERED BY THE USER OR NOT, IF THEY ARE THE DATA LIST IS POPULATED
@@ -628,9 +629,9 @@ def computeR(path):
         Y = dataset['CDF']
 
         # FOR CREATING ENTRIES IN data:
-        rootRank = Toplevel(root)
-        rootRank.title("Results")
-        rootRank.resizable(False, False)
+        rootCriteria = Toplevel(root)
+        rootCriteria.title("Results")
+        rootCriteria.resizable(False, False)
 
         modelRoutines = [
             gomodel,
@@ -667,113 +668,17 @@ def computeR(path):
             criterias.insert(0, selected[0])
             criteriaData.append(criterias)
 
-        # print(criteriaData)
-        # CALCULATE TOPSIS OVER HERE--------------------------------
-
-
-        cdata = []
-        for modelData in criteriaData:
-            cdata.append(modelData[1:])
-        cdata = np.array(cdata)
-
-        n = cdata.shape[0] # number of models
-        m = cdata.shape[1] # number of criterias
-
-        # SO FAR SO GOOD
-        # CALCULATING THE WEIGHT MATRIX ----------------------------------------------
-
-        # normalizing the weight matrix
-        P = cdata / np.sum(cdata, axis=0)
-        # calculating the entropy vector
-        e = (-1) * np.sum(P * np.log(P), axis=0) / np.log(n)
-        # calculating the degree of diversification
-        d = 1-e
-        # calculating the weights
-        w = d / np.sum(d)
-
-        # CALCULATED THE WEIGHT MATRIX -----------------------------------------------
-        # CALCULATING THE RANK -------------------------------------------------------
-        y = cdata / np.sqrt(np.sum(cdata**2, axis=0))
-        v = w * y
-
-        vpos = []
-        vneg = []
-
-        criteria_map = {
-            'mse': v[:, 0],
-            'mae': v[:, 1],
-            'r2': v[:, 2],
-            'adjr2': v[:, 3],
-            'aic': v[: 4],
-            'pp': v[:, 5],
-            'meop': v[:, 6],
-            'theil': v[: 7]
-        }
-        maximizer = ['r2', 'adjr2']
-        minimizer = ['mse', 'mae', 'pp', 'meop', 'aic', 'theil']
-
-        for criteria in criteria_map:
-            if criteria in maximizer:
-                best = np.amax(criteria_map[criteria])
-                worst = np.amin(criteria_map[criteria])
-                vpos.append(best)
-                vneg.append(worst)
-            if criteria in minimizer:
-                best = np.amin(criteria_map[criteria])
-                worst = np.amax(criteria_map[criteria])
-                vpos.append(best)
-                vneg.append(worst)
-
-        # converting ideal best and ideal worst data to usable form
-        vpos = np.array(vpos)
-        vneg = np.array(vneg)
-
-        spos = np.sqrt(np.sum( (v-vpos)**2 , axis=1))
-        sneg = np.sqrt(np.sum( (v-vneg)**2 , axis=1))
-
-        # final relative closeness results
-        c = sneg / (spos + sneg)
-
-        # ranking the models
-        ranked = {}
-        rankArr = np.array([0 for _ in range(n)])
-        initialRank = 1
-
-        for _ in range(n):
-            # populating rank list
-            index = np.argmin(c)
-            ranked[index] = initialRank
-            # discarding the considered index
-            c[index] = np.inf
-            initialRank += 1
-
-        for i in range(n):
-            rankArr[i] = ranked[i]
-
-        rankArr = np.array([[i] for i in rankArr])
-        # CALCULATED THE RANKS -----------------------------------------------
-
-        modelsWithRank = []
-        criteriasWithRank = np.append(cdata, rankArr, 1)
-
-        for i in range(len(criteriasWithRank)):
-            row = list(criteriasWithRank[i])
-            row.insert(0, data[i][0])
-            modelsWithRank.append(row)
-
-        print(modelsWithRank)
-        #-----------------------------------------------------------
         # ADDING TO TABLE
-        columns = ('models', 'mse', 'mae', 'rsquare', 'adrsquare', 'aic', 'pp', 'meop', 'theil', 'rank')
-        columnsText = ('Models', 'MSE', 'MAE', 'R Squared', 'Adj. R Squared', 'AIC', 'PP', 'MEOP', 'TS', 'Rank')
-        tree = Treeview(rootRank, columns=columns, show='headings')
+        columns = ('models', 'mse', 'mae', 'rsquare', 'adrsquare', 'aic', 'pp', 'meop', 'theil')
+        columnsText = ('Models', 'MSE', 'MAE', 'R Squared', 'Adj. R Squared', 'AIC', 'PP', 'MEOP', 'TS')
+        tree = Treeview(rootCriteria, columns=columns, show='headings')
 
         for i in range(len(columns)):
             tree.heading(columns[i], text=columnsText[i])
-            tree.column(columns[i], minwidth=110, width=100)
+            tree.column(columns[i], minwidth=100, width=100)
         
 
-        for i in modelsWithRank:
+        for i in criteriaData:
             # SHORTENING THE NUMBERS TILL 5 DECIMAL PLACES
             model = i[0]
             temp = [np.round_(j, decimals=5) for j in i[1:]]
@@ -782,15 +687,206 @@ def computeR(path):
             tree.insert('', END, values=tuple(temp))
 
         tree.grid(row=0, column=0)
-        rootRank.mainloop()
+        rootCriteria.mainloop()
+
+# THIS ROUTINE IS TO CALCULATE RANKS FOR MODELS
+def computeR(path):
+    rootR = Toplevel(root)
+
+    var = IntVar()
+    def calculateRanks(path):
+        data = []
+        # CHECKING IF MODEL PARAMETERS ARE EVEN ENTERED BY THE USER OR NOT, IF THEY ARE THE DATA LIST IS POPULATED
+        # WITH MODEL ALONG WITH THE ESTIMATED PARAMETERS
+        for model in modelMap:
+            param = modelMap[model]
+            print(model, "--->", param)
+            if param:
+                data.append([model, param]) # THE FIRST ARG ---> STRING, SECOND ARG ---> PARAMETERS
+
+        if len(data) <= 1:
+            showerror(title='Cannot run TOPSIS', message="None or less models have been selected, TOPSIS requires atleast 2 models.")
+        else:
+            # GETTING THE DATA FROM DATASET IN ORDER TO CALCULATE PERFORMANCE CRITERIA
+            dataset = pd.read_csv(path)
+            X = dataset['Time']
+            Y = dataset['CDF']
+
+            # FOR CREATING ENTRIES IN data:
+            rootRank = Toplevel(root)
+            rootRank.title("Results")
+            rootRank.resizable(False, False)
+
+            modelRoutines = [
+                gomodel,
+                yamadaR,
+                delayedS,
+                inflectionS,
+                yamadaImperfect1,
+                yamadaImperfect2,
+                yamadaExponential,
+                vtub,
+                rmd,
+                changs
+            ]
+            criteriaData = []
+
+
+            # VALIDATING THE DATABASE KEYS WITH MODEL NAMES 
+            for selected in data:
+                criterias = []
+                for model in modelRoutines:
+                    if selected[0] == model.name:
+                        params = selected[1]
+                        mse = model.mse(params, X, Y)
+                        mae = model.mae(params, X, Y)
+                        r2 = model.rsquare(params, X, Y)
+                        adr = model.adrsquare(params, X, Y)
+                        pp = model.PP(params, X, Y)             
+                        aic = model.aic(params, X, Y)
+                        meop = model.meop(params, X, Y)
+                        theil = model.theil(params, X, Y) 
+
+                        criterias = [mse, mae, r2, adr, aic, pp, meop, theil] # WHILE ADDING COLUMNS TO THE TREEVIEW MAKE SURE TO ENTER THE COLUMNS IN THIS ORDER OF CRITERIA ONLY
+                        break
+                criterias.insert(0, selected[0])
+                criteriaData.append(criterias)
+
+            # print(criteriaData)
+            # CALCULATE TOPSIS OVER HERE--------------------------------
+
+
+            cdata = []
+            for modelData in criteriaData:
+                cdata.append(modelData[1:])
+            cdata = np.array(cdata)
+
+            n = cdata.shape[0] # number of models
+            m = cdata.shape[1] # number of criterias
+
+            # SO FAR SO GOOD
+            # CALCULATING THE WEIGHT MATRIX ----------------------------------------------
+
+            # normalizing the weight matrix
+            P = cdata / np.sum(cdata, axis=0)
+            # calculating the entropy vector
+            e = (-1) * np.sum(P * np.log(P), axis=0) / np.log(n)
+            # calculating the degree of diversification
+            d = 1-e
+            # calculating the weights
+            w = d / np.sum(d)
+
+            # CALCULATED THE WEIGHT MATRIX -----------------------------------------------
+            # CALCULATING THE RANK -------------------------------------------------------
+            y = cdata / np.sqrt(np.sum(cdata**2, axis=0))
+            v = w * y
+
+            vpos = []
+            vneg = []
+
+            criteria_map = {
+                'mse': v[:, 0],
+                'mae': v[:, 1],
+                'r2': v[:, 2],
+                'adjr2': v[:, 3],
+                'aic': v[: 4],
+                'pp': v[:, 5],
+                'meop': v[:, 6],
+                'theil': v[: 7]
+            }
+            maximizer = ['r2', 'adjr2']
+            minimizer = ['mse', 'mae', 'pp', 'meop', 'aic', 'theil']
+
+            for criteria in criteria_map:
+                if criteria in maximizer:
+                    best = np.amax(criteria_map[criteria])
+                    worst = np.amin(criteria_map[criteria])
+                    vpos.append(best)
+                    vneg.append(worst)
+                if criteria in minimizer:
+                    best = np.amin(criteria_map[criteria])
+                    worst = np.amax(criteria_map[criteria])
+                    vpos.append(best)
+                    vneg.append(worst)
+
+            # converting ideal best and ideal worst data to usable form
+            vpos = np.array(vpos)
+            vneg = np.array(vneg)
+
+            spos = np.sqrt(np.sum( (v-vpos)**2 , axis=1))
+            sneg = np.sqrt(np.sum( (v-vneg)**2 , axis=1))
+
+            # final relative closeness results
+            c = sneg / (spos + sneg)
+
+            # ranking the models
+            ranked = {}
+            rankArr = [0 for _ in range(n)] # CHANGED HERE 
+            initialRank = 1
+
+            for _ in range(n):
+                # populating rank list
+                index = np.argmin(c)
+                ranked[index] = initialRank
+                # discarding the considered index
+                c[index] = np.inf
+                initialRank += 1
+
+            for i in range(n):
+                rankArr[i] = ranked[i]
+
+            rankArr = [[i] for i in rankArr] # CHANGED HERE
+            # CALCULATED THE RANKS -----------------------------------------------
+
+            modelsWithRank = []
+            # criteriasWithRank = np.append(cdata, rankArr, 1)
+
+            for i in range(len(rankArr)):
+                row = [data[i][0], rankArr[i][0]]
+                modelsWithRank.append(row)
+
+            print(modelsWithRank)
+            #-----------------------------------------------------------
+            # ADDING TO TABLE
+            columns = ('models', 'rank')
+            columnsText = ('Models', 'Rank')
+            tree = Treeview(rootRank, columns=columns, show='headings')
+
+            for i in range(len(columns)):
+                tree.heading(columns[i], text=columnsText[i])
+                tree.column(columns[i])
+            
+
+            for i in modelsWithRank:
+                # ADDING TO THE TREE VIEW
+                tree.insert('', END, values=tuple(i))
+
+            tree.grid(row=0, column=0)
+            rootRank.mainloop()
+    
+    r1 = Radiobutton(rootR, text='Entropy & TOPSIS', variable=var, value=1)
+    submitButton = Button(rootR, text='Submit', command=lambda: calculateRanks(path))
+    closeButton = Button(rootR, text="Close", command=rootR.destroy)
+
+    r1.pack()
+    submitButton.pack()
+    closeButton.pack()
+
+    rootR.mainloop()
 
 # THIS ROUTINE ACTS AS A DISPATCHER TO ABOVE ROUTINES ---> display(), compute(), computeR()
 def models(path):
     try:
+        # till testing
         data = pd.read_csv(path)
         
         global rootModels
         rootModels = Toplevel(root)
+        rootModels.title("Computation")
+        rootModels.geometry("400x400")
+
+        canvas = Canvas(rootModels, width=400, height=400)
+        canvas.pack()
 
         # MODEL AND ESTIMATED PARAMETER HASHMAP
         global modelMap
@@ -820,12 +916,15 @@ def models(path):
             'Chang et al\'s':['a', 'b', '\u03B1', '\u03B2', 'n']       # a, b, alpha, beta, n
         }
 
-        comp = Button(rootModels, text='Compute', command=lambda: compute(path))
-        disp = Button(rootModels, text='Display', command=lambda: display())
-        compR = Button(rootModels, text='Compute Rank', command=lambda: computeR(path))
-        comp.pack()
-        disp.pack()
-        compR.pack()
+        comp = Button(canvas, text='Enter Initial Values', command=lambda: compute(path))
+        disp = Button(canvas, text='Display Model Parameters', command=lambda: display())
+        compC = Button(canvas, text='Compute Criterias', command=lambda: computeC(path))
+        compR = Button(canvas, text='Compute Ranks', command=lambda: computeR(path))
+        
+        comp.place(relx=0.15, rely=0.10, relwidth=0.7, relheight=0.2)
+        disp.place(relx=0.15, rely=0.30, relwidth=0.7, relheight=0.2)
+        compC.place(relx=0.15, rely=0.50, relwidth=0.7, relheight=0.2)
+        compR.place(relx=0.15, rely=0.7, relwidth=0.7, relheight=0.2)
         rootModels.mainloop()
     except FileNotFoundError:
         showerror(title="Dataset not loaded", message='Please enter the correct path of dataset and press the load button')
@@ -836,19 +935,29 @@ def models(path):
 def main():
     global root
     root = Tk()
+    root.title("Reliability DSS")
+    root.geometry("500x250")
+    buttonFont = Style()
+    buttonFont.configure('W.TButton', font=('arial', 12))
 
     path = StringVar()
 
-    modelButton = Button(root, text='View Models', command=lambda: models(pathEntry.get())) # SUBSTITUTE WITH THE models OVER HERE
-    pathEntry = Entry(root)
-    loadButton = Button(root, text='Load Dataset', command=lambda: loadData(pathEntry.get(), path))
-    viewButton = Button(root, text='View Dataset', command=lambda: viewData(pathEntry.get()))
+    rootCanvas = Canvas(root, width=500, height=250)
+    rootCanvas.pack()
 
+    modelButton = Button(rootCanvas, text='View Models', command=lambda: models(pathEntry.get())) # SUBSTITUTE WITH THE models OVER HERE
+    # modelButton['font'] = buttonFont
+    
+    pathEntry = Entry(rootCanvas, width=35)
+    loadButton = Button(rootCanvas, text='Load Dataset', command=lambda: loadData(pathEntry.get(), path))
+    viewButton = Button(rootCanvas, text='View Dataset', command=lambda: viewData(pathEntry.get()))
+    closeButton = Button(rootCanvas, text='Close', command=root.destroy)
     # PLACING THE BUTTONS  
-    modelButton.grid(row=1, column=0)
-    pathEntry.grid(row=0, column=2)
-    loadButton.grid(row=1, column=2)
-    viewButton.grid(row=2, column=2)
+    modelButton.place(relx=0.10, rely=0.35, relwidth=0.35, relheight=0.2)
+    pathEntry.place(relx=0.50, rely=0.15)
+    loadButton.place(relx=0.55, rely=0.25, relwidth=0.35, relheight=0.2)
+    viewButton.place(relx=0.55, rely=0.45, relwidth=0.35, relheight=0.2)
+    closeButton.place(relx=0.35, rely=0.75, relwidth=0.25, relheight=0.15)
 
     root.mainloop()
 
