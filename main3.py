@@ -67,7 +67,6 @@ def display():
     else:
         rootDisp = Toplevel(root)
         rootDisp.title("Estimated Parameters")
-
     
         for i in range(len(computedModels)):
             model = computedModels[i]
@@ -88,8 +87,6 @@ def display():
             modelParams = Label(rootDisp, text=paramString)
             modelLabel.grid(row=i, column=0)
             modelParams.grid(row=i, column=1)
-
-       
 
         rootDisp.mainloop()
     pass
@@ -936,8 +933,6 @@ def main():
     root = Tk()
     root.title("Reliability DSS")
     root.geometry("500x250")
-    # buttonFont = Style()
-    # buttonFont.configure('W.TButton', font=('arial', 12))
 
     path = StringVar()
 
