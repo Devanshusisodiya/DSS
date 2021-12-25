@@ -10,10 +10,11 @@ from scipy.optimize import minimize
 
 #------------------------------------------DATASET LOADER AND VIEWER--------------------------------------------
 # SUBROUTINE TO LOAD DATA
-def loadData(path, stringvar):
+def loadData(path, stringvar, loaded):
     try:
         data = pd.read_csv(path)
         stringvar.set(path)
+        loaded.set(True)
         showinfo(title='Load successful', message='The dataset has been loaded successfuly.')
     except FileNotFoundError or PermissionError:
         return showerror(title="Incorrect path", message='The path entered does not exist. Please make sure to enter correct path.')
@@ -21,7 +22,7 @@ def loadData(path, stringvar):
 # WINDOW TO VIEW DATA
 def viewData(path):
     #checking if the path entered or not
-    try:
+    if loaded.get():
         data = pd.read_csv(f'{path}')   
 
         rootView = Toplevel(root)
@@ -48,7 +49,7 @@ def viewData(path):
         scrollbar.grid(row=0, column=1, sticky='ns')
 
         rootView.mainloop()
-    except FileNotFoundError:
+    else:
         showerror(title="Dataset not loaded", message='Please enter the correct path of dataset and press the load button')
 
 #-----------------------------------------------------------------------------------------------------------
@@ -67,6 +68,7 @@ def display():
     else:
         rootDisp = Toplevel(root)
         rootDisp.title("Estimated Parameters")
+        # rootDisp.geometry()
     
         for i in range(len(computedModels)):
             model = computedModels[i]
@@ -78,15 +80,15 @@ def display():
                 # PARAMETER STRING = PARAMETER LABEL + PARAMETER VALUE
                 parameter = labelParams[j]
                 parameterValue = "{:.4e}".format(estimatedParams[j])
-                paramString += parameter + " : " + parameterValue + "\n"
+                paramString += parameter + "   :   " + parameterValue + "\n"
             # A LITTLE FORMATTING OF DATA
             model = model + "  "
             paramString = "\n" + paramString
             # ADDING MODEL AND PARAMETERS FOR DISPLAY IN THE WINDOW
             modelLabel = Label(rootDisp, text=model)
             modelParams = Label(rootDisp, text=paramString)
-            modelLabel.grid(row=i, column=0)
-            modelParams.grid(row=i, column=1)
+            modelLabel.grid(row=i, column=0, padx=25)
+            modelParams.grid(row=i, column=1, padx=25)
 
         rootDisp.mainloop()
     pass
@@ -365,7 +367,7 @@ def computeC(path):
 # I DONT KNOW WHY I NAMED IT COMPUTE BUT ITS JUST THE MODEL PARAMETER ESTIMATOR
 def compute(path):
 
-    try:
+    if loaded.get():
         data = pd.read_csv(path)
 
         X = data['Time']
@@ -407,6 +409,19 @@ def compute(path):
         # canvas.create_line()
         canvas.pack()
 
+        # TESTING ---> IT WORKS BUT ONLY NEED TO APPLY ON SOME BUTTONS, NOT ALL
+        style = Style()
+        # style.theme_use('alt')
+        style.configure('GO.TButton', background = 'red')
+        style.configure('Delayed.TButton', background = 'red')
+        style.configure('Inflection.TButton', background = 'red')
+        style.configure('YamadaRay.TButton', background = 'red')
+        style.configure('YamadaIm1.TButton', background = 'red')
+        style.configure('YamadaIm2.TButton', background = 'red')
+        style.configure('YamadaExpo.TButton', background = 'red')
+        style.configure('Vtub.TButton', background = 'red')
+        style.configure('RMD.TButton', background = 'red')
+        style.configure('Changs.TButton', background = 'red')
         
         # I THINK I SHOULD ALSO INCLUDE THE PARAMETER ESTIMATION INSIDE THESE FUNCTIONS ONLY
         # WITHIN THE _sub METHOD, AND MAINTAIN THE DATABASE(GLOBAL MODEL DICTIONARY WITH THE ESTIMATED PARAMETERS)
@@ -416,6 +431,8 @@ def compute(path):
         # NAMES HAVE BEEN CHANGED BECAUSE THE SYSTEM HAD NO TROUBLE INCORPORATING ANOTHER MODEL
         def goModelParamEst(modelObject):
             rootPar = Toplevel(rootComp)
+            rootPar.title("GO Model Initial Parameters")
+            rootPar.geometry("350x175")
 
             def _sub():
                 arrToOptimize = [
@@ -424,11 +441,18 @@ def compute(path):
                 ]
                 minimizationResults = minimize(fun=modelObject.OLS, x0=arrToOptimize, args=(X, Y), method='Nelder-Mead')
                 modelMap[modelObject.name] = list(minimizationResults.x)
+                # CHANGING BUTTON COLOR
+                style.configure('GO.TButton', background='green')
+                #
                 rootPar.destroy()
+                
                 
             def _removeModel():
                 try:
                     modelMap[modelObject.name] = None
+                    # CHANGING BUTTON COLOR
+                    style.configure('GO.TButton', background='red')
+                    #
                     rootPar.destroy()
                     messagebox.showinfo(title='Model Removal', message="Model has been successfuly removed")
                 except:
@@ -436,24 +460,26 @@ def compute(path):
 
             param1Label = Label(rootPar, text="a (cummulative faults)")
             param2Label = Label(rootPar, text="b (detection rate)")
-            param1 = Entry(rootPar) # THIS IS PARAMETER 'a' FOR GO MODEL
-            param2 = Entry(rootPar) # THIS IS PARAMETER 'b' FOR GO MODEL
+            param1 = Entry(rootPar, width=30) # THIS IS PARAMETER 'a' FOR GO MODEL
+            param2 = Entry(rootPar, width=30) # THIS IS PARAMETER 'b' FOR GO MODEL
             submitAndEstimate = Button(rootPar, text="Submit", command=_sub)
             removeModel = Button(rootPar, text="Remove", command=_removeModel)
             # LABELS PLACING
-            param1Label.grid(row=0, column=0)
-            param2Label.grid(row=1, column=0)
+            param1Label.place(relx=0, rely=0)
+            param2Label.place(relx=0, rely=0.15)
             # ENTRY PLACING
-            param1.grid(row=0, column=2)
-            param2.grid(row=1, column=2)
-            submitAndEstimate.grid(row=2, column=1)
-            removeModel.grid(row=3, column=1)
+            param1.place(relx=0.4, rely=0)
+            param2.place(relx=0.4, rely=0.15)
+            submitAndEstimate.place(relx=0.3, rely=0.5, relwidth=0.35, relheight=0.2)
+            removeModel.place(relx=0.3, rely=0.7, relwidth=0.35, relheight=0.2)
 
             rootPar.mainloop()
 
         # THIS IS FOR MODEL 2 ---> DELAYED S
         def delayedSParamEst(modelObject):
             rootPar = Toplevel(rootComp)
+            rootPar.title("Delayed S Shaped Model Initial Parameters")
+            rootPar.geometry("400x175")
 
             def _sub():
                 arrToOptimize = [
@@ -462,11 +488,17 @@ def compute(path):
                 ]
                 minimizationResults = minimize(fun=modelObject.OLS, x0=arrToOptimize, args=(X, Y), method='Nelder-Mead')
                 modelMap[modelObject.name] = list(minimizationResults.x)
+                # CHANGING BUTTON COLOR
+                style.configure('Delayed.TButton', background='green')
+                #
                 rootPar.destroy()
             
             def _removeModel():
                 try:
                     modelMap[modelObject.name] = None
+                    # CHANGING BUTTON COLOR
+                    style.configure('Delayed.TButton', background='red')
+                    #
                     rootPar.destroy()
                     messagebox.showinfo(title='Model Removal', message="Model has been successfuly removed")
                 except:
@@ -474,25 +506,27 @@ def compute(path):
 
             param1Label = Label(rootPar, text="a (cummulative faults)")
             param2Label = Label(rootPar, text="b (detection rate)")
-            param1 = Entry(rootPar) # THIS IS PARAMETER 'a' FOR DELAYED S MODEL
-            param2 = Entry(rootPar) # THIS IS PARAMETER 'b' FOR DELAYED S MODEL
+            param1 = Entry(rootPar, width=35) # THIS IS PARAMETER 'a' FOR DELAYED S MODEL
+            param2 = Entry(rootPar, width=35) # THIS IS PARAMETER 'b' FOR DELAYED S MODEL
             submitAndEstimate = Button(rootPar, text="Submit", command=_sub)
             removeModel = Button(rootPar, text="Remove", command=_removeModel)
             
             # LABELS PLACING
-            param1Label.grid(row=0, column=0)
-            param2Label.grid(row=1, column=0)
+            param1Label.place(relx=0, rely=0)
+            param2Label.place(relx=0, rely=0.15)
             # ENTRY PLACING
-            param1.grid(row=0, column=2)
-            param2.grid(row=1, column=2)
-            submitAndEstimate.grid(row=2, column=1)
-            removeModel.grid(row=3, column=1)
+            param1.place(relx=0.4, rely=0)
+            param2.place(relx=0.4, rely=0.15)
+            submitAndEstimate.place(relx=0.3, rely=0.5, relwidth=0.35, relheight=0.2)
+            removeModel.place(relx=0.3, rely=0.7, relwidth=0.35, relheight=0.2)
 
             rootPar.mainloop()
 
         # THIS IS FOR MODEL 3 ---> INFLECTION S
         def inflectionSParamEst(modelObject):    
             rootPar = Toplevel(rootComp)
+            rootPar.title("Inflection S Shaped Initial Parameters")
+            rootPar.geometry("400x200")
 
             def _sub():
                 arrToOptimize = [
@@ -503,11 +537,17 @@ def compute(path):
 
                 minimizationResults = minimize(fun=modelObject.OLS, x0=arrToOptimize, args=(X, Y), method='Nelder-Mead')
                 modelMap[modelObject.name] = list(minimizationResults.x)
+                # CHANGING BUTTON COLOR
+                style.configure('Inflection.TButton', background='green')
+                #
                 rootPar.destroy()
             
             def _removeModel():
                 try:
                     modelMap[modelObject.name] = None
+                    # CHANGING BUTTON COLOR
+                    style.configure('Inflection.TButton', background='red')
+                    #
                     rootPar.destroy()
                     messagebox.showinfo(title='Model Removal', message="Model has been successfuly removed")
                 except:
@@ -516,28 +556,30 @@ def compute(path):
             param1Label = Label(rootPar, text="a (cummulative faults)")  # THIS IS PARAMETER 'a' FOR INFLECTION S MODEL
             param2Label = Label(rootPar, text="b (detection rate)")  # THIS IS PARAMETER 'b' FOR INFLECTION S MODEL
             param3Label = Label(rootPar, text="\u03B2 (scale parameter)") #beta
-            param1 = Entry(rootPar)
-            param2 = Entry(rootPar)
-            param3 = Entry(rootPar)
+            param1 = Entry(rootPar, width=35)
+            param2 = Entry(rootPar, width=35)
+            param3 = Entry(rootPar, width=35)
             submitAndEstimate = Button(rootPar, text="Submit", command=_sub)
             removeModel = Button(rootPar, text="Remove", command=_removeModel)
             
             # LABELS PLACING
-            param1Label.grid(row=0, column=0)
-            param2Label.grid(row=1, column=0)
-            param3Label.grid(row=2, column=0)
+            param1Label.place(relx=0, rely=0)
+            param2Label.place(relx=0, rely=0.125)
+            param3Label.place(relx=0, rely=0.25)
             # ENTRY PLACING
-            param1.grid(row=0, column=2)
-            param2.grid(row=1, column=2)
-            param3.grid(row=2, column=2)
-            submitAndEstimate.grid(row=5, column=2)
-            removeModel.grid(row=6, column=2)
+            param1.place(relx=0.4, rely=0)
+            param2.place(relx=0.4, rely=0.125)
+            param3.place(relx=0.4, rely=0.25)
+            submitAndEstimate.place(relx=0.3, rely=0.50, relwidth=0.35, relheight=0.2)
+            removeModel.place(relx=0.3, rely=0.70, relwidth=0.35, relheight=0.2)
 
             rootPar.mainloop()
 
         # THIS IS FOR MODEL 4 ---> YAMADA RAYLEIGH
         def yamadaRayleighParamEst(modelObject):    
             rootPar = Toplevel(rootComp)
+            rootPar.title("Yamada Rayleigh Model Initial Parameters")
+            rootPar.geometry("400x250")
 
             def _sub():
                 arrToOptimize = [
@@ -549,11 +591,17 @@ def compute(path):
 
                 minimizationResults = minimize(fun=modelObject.OLS, x0=arrToOptimize, args=(X, Y), method='Nelder-Mead')
                 modelMap[modelObject.name] = list(minimizationResults.x)
+                # CHANGING BUTTON COLOR
+                style.configure('YamadaRay.TButton', background='green')
+                #
                 rootPar.destroy()
             
             def _removeModel():
                 try:
                     modelMap[modelObject.name] = None
+                    # CHANGING BUTTON COLOR
+                    style.configure('YamadaRay.TButton', background='red')
+                    #
                     rootPar.destroy()
                     messagebox.showinfo(title='Model Removal', message="Model has been successfuly removed")
                 except:
@@ -563,31 +611,33 @@ def compute(path):
             param2Label = Label(rootPar, text="\u03B1 (total expenditure)") # THIS IS PARAMETER 'alpha' FOR YAMADA RAYLEIGH MODEL
             param3Label = Label(rootPar, text="\u03B2 (scale parameter)") # THIS IS PARAMETER 'beta' FOR YAMADA RAYLEIGH MODEL
             param4Label = Label(rootPar, text="\u03B3 (confidence level)") # THIS IS PARAMETER 'gamma' FOR YAMADA RAYLEIGH MODEL
-            param1 = Entry(rootPar)
-            param2 = Entry(rootPar)
-            param3 = Entry(rootPar)
-            param4 = Entry(rootPar)
+            param1 = Entry(rootPar, width=35)
+            param2 = Entry(rootPar, width=35)
+            param3 = Entry(rootPar, width=35)
+            param4 = Entry(rootPar, width=35)
             submitAndEstimate = Button(rootPar, text="Submit", command=_sub)
             removeModel = Button(rootPar, text="Remove", command=_removeModel)
             
             # LABELS PLACING
-            param1Label.grid(row=0, column=0)
-            param2Label.grid(row=1, column=0)
-            param3Label.grid(row=2, column=0)
-            param4Label.grid(row=3, column=0)
+            param1Label.place(relx=0, rely=0)
+            param2Label.place(relx=0, rely=0.1)
+            param3Label.place(relx=0, rely=0.2)
+            param4Label.place(relx=0, rely=0.3)
             # ENTRY PLACING
-            param1.grid(row=0, column=2)
-            param2.grid(row=1, column=2)
-            param3.grid(row=2, column=2)
-            param4.grid(row=3, column=2)
-            submitAndEstimate.grid(row=5, column=2)
-            removeModel.grid(row=6, column=2)
+            param1.place(relx=0.4, rely=0)
+            param2.place(relx=0.4, rely=0.1)
+            param3.place(relx=0.4, rely=0.2)
+            param4.place(relx=0.4, rely=0.3)
+            submitAndEstimate.place(relx=0.3, rely=0.50, relwidth=0.35, relheight=0.2)
+            removeModel.place(relx=0.3, rely=0.70, relwidth=0.35, relheight=0.2)
 
             rootPar.mainloop()
 
         # THIS IS FOR MODEL 5 ---> YAMADA IMPERFECT 1
         def yamadaImperfect1ParamEst(modelObject):    
             rootPar = Toplevel(rootComp)
+            rootPar.title("Yamada Imperfect1 Model Initial Parameters")
+            rootPar.geometry("400x200")
 
             def _sub():
                 arrToOptimize = [
@@ -598,11 +648,17 @@ def compute(path):
 
                 minimizationResults = minimize(fun=modelObject.OLS, x0=arrToOptimize, args=(X, Y), method='Nelder-Mead')
                 modelMap[modelObject.name] = list(minimizationResults.x)
+                # CHANGING BUTTON COLOR
+                style.configure('YamadaIm1.TButton', background='green')
+                #
                 rootPar.destroy()
             
             def _removeModel():
                 try:
                     modelMap[modelObject.name] = None
+                    # CHANGING BUTTON COLOR
+                    style.configure('YamadaIm1.TButton', background='red')
+                    #
                     rootPar.destroy()
                     messagebox.showinfo(title='Model Removal', message="Model has been successfuly removed")
                 except:
@@ -611,28 +667,31 @@ def compute(path):
             param1Label = Label(rootPar, text="a (cummulative faults)")      # THIS IS PARAMETER 'a' FOR YAMADA IMPERFECT 1 MODEL
             param2Label = Label(rootPar, text="b (detection rate)")      # THIS IS PARAMETER 'b' FOR YAMADA IMPERFECT 1 MODEL
             param3Label = Label(rootPar, text="\u03B1 (total expenditure)") # THIS IS PARAMETER 'alpha' FOR YAMADA IMPERFECT 1 MODEL
-            param1 = Entry(rootPar)
-            param2 = Entry(rootPar)
-            param3 = Entry(rootPar)
+            param1 = Entry(rootPar, width=35)
+            param2 = Entry(rootPar, width=35)
+            param3 = Entry(rootPar, width=35)
             submitAndEstimate = Button(rootPar, text="Submit", command=_sub)
             removeModel = Button(rootPar, text="Remove", command=_removeModel)
             
+
             # LABELS PLACING
-            param1Label.grid(row=0, column=0)
-            param2Label.grid(row=1, column=0)
-            param3Label.grid(row=2, column=0)
+            param1Label.place(relx=0, rely=0)
+            param2Label.place(relx=0, rely=0.125)
+            param3Label.place(relx=0, rely=0.25)
             # ENTRY PLACING
-            param1.grid(row=0, column=2)
-            param2.grid(row=1, column=2)
-            param3.grid(row=2, column=2)
-            submitAndEstimate.grid(row=5, column=2)
-            removeModel.grid(row=6, column=2)
+            param1.place(relx=0.4, rely=0)
+            param2.place(relx=0.4, rely=0.125)
+            param3.place(relx=0.4, rely=0.25)
+            submitAndEstimate.place(relx=0.3, rely=0.50, relwidth=0.35, relheight=0.2)
+            removeModel.place(relx=0.3, rely=0.70, relwidth=0.35, relheight=0.2)
 
             rootPar.mainloop()
 
         # THIS IS FOR MODEL 6 ---> YAMADA IMPERFECT 2
         def yamadaImperfect2ParamEst(modelObject):    
             rootPar = Toplevel(rootComp)
+            rootPar.title("Yamada Imperfect2 Model Initial Parameters")
+            rootPar.geometry("400x200")
 
             def _sub():
                 arrToOptimize = [
@@ -643,11 +702,17 @@ def compute(path):
 
                 minimizationResults = minimize(fun=modelObject.OLS, x0=arrToOptimize, args=(X, Y), method='Nelder-Mead')
                 modelMap[modelObject.name] = list(minimizationResults.x)
+                # CHANGING BUTTON COLOR
+                style.configure('YamadaIm2.TButton', background='green')
+                #
                 rootPar.destroy()
             
             def _removeModel():
                 try:
                     modelMap[modelObject.name] = None
+                    # CHANGING BUTTON COLOR
+                    style.configure('YamadaIm2.TButton', background='red')
+                    #
                     rootPar.destroy()
                     messagebox.showinfo(title='Model Removal', message="Model has been successfuly removed")
                 except:
@@ -656,28 +721,30 @@ def compute(path):
             param1Label = Label(rootPar, text="a (cummulative faults)")      # THIS IS PARAMETER 'a' FOR YAMADA IMPERFECT 1 MODEL
             param2Label = Label(rootPar, text="b (detection rate)")      # THIS IS PARAMETER 'b' FOR YAMADA IMPERFECT 1 MODEL
             param3Label = Label(rootPar, text="\u03B1 (total expenditure)") # THIS IS PARAMETER 'alpha' FOR YAMADA IMPERFECT 1 MODEL
-            param1 = Entry(rootPar)
-            param2 = Entry(rootPar)
-            param3 = Entry(rootPar)
+            param1 = Entry(rootPar, width=35)
+            param2 = Entry(rootPar, width=35)
+            param3 = Entry(rootPar, width=35)
             submitAndEstimate = Button(rootPar, text="Submit", command=_sub)
             removeModel = Button(rootPar, text="Remove", command=_removeModel)
             
             # LABELS PLACING
-            param1Label.grid(row=0, column=0)
-            param2Label.grid(row=1, column=0)
-            param3Label.grid(row=2, column=0)
+            param1Label.place(relx=0, rely=0)
+            param2Label.place(relx=0, rely=0.125)
+            param3Label.place(relx=0, rely=0.25)
             # ENTRY PLACING
-            param1.grid(row=0, column=2)
-            param2.grid(row=1, column=2)
-            param3.grid(row=2, column=2)
-            submitAndEstimate.grid(row=5, column=2)
-            removeModel.grid(row=6, column=2)
+            param1.place(relx=0.4, rely=0)
+            param2.place(relx=0.4, rely=0.125)
+            param3.place(relx=0.4, rely=0.25)
+            submitAndEstimate.place(relx=0.3, rely=0.50, relwidth=0.35, relheight=0.2)
+            removeModel.place(relx=0.3, rely=0.70, relwidth=0.35, relheight=0.2)
 
             rootPar.mainloop()
 
         # THIS IS FOR MODEL 7 ---> YAMADA EXPONENTIAL
         def yamadaExponentialParamEst(modelObject):    
             rootPar = Toplevel(rootComp)
+            rootPar.title("Yamada Exponential Model Initial Parameters")
+            rootPar.geometry("400x250")
 
             def _sub():
                 arrToOptimize = [
@@ -689,11 +756,17 @@ def compute(path):
 
                 minimizationResults = minimize(fun=modelObject.OLS, x0=arrToOptimize, args=(X, Y), method='Nelder-Mead')
                 modelMap[modelObject.name] = list(minimizationResults.x)
+                # CHANGING BUTTON COLOR
+                style.configure('YamadaExpo.TButton', background='green')
+                #
                 rootPar.destroy()
             
             def _removeModel():
                 try:
                     modelMap[modelObject.name] = None
+                    # CHANGING BUTTON COLOR
+                    style.configure('YamadaExpo.TButton', background='red')
+                    #
                     rootPar.destroy()
                     messagebox.showinfo(title='Model Removal', message="Model has been successfuly removed")
                 except:
@@ -703,31 +776,33 @@ def compute(path):
             param2Label = Label(rootPar, text="\u03B1 (total expenditure)") # THIS IS PARAMETER 'alpha' FOR YAMADA RAYLEIGH MODEL
             param3Label = Label(rootPar, text="\u03B2 (scale parameter)") # THIS IS PARAMETER 'beta' FOR YAMADA RAYLEIGH MODEL
             param4Label = Label(rootPar, text="\u03B3 (confidence level)") # THIS IS PARAMETER 'gamma' FOR YAMADA RAYLEIGH MODEL
-            param1 = Entry(rootPar)
-            param2 = Entry(rootPar)
-            param3 = Entry(rootPar)
-            param4 = Entry(rootPar)
+            param1 = Entry(rootPar, width=35)
+            param2 = Entry(rootPar, width=35)
+            param3 = Entry(rootPar, width=35)
+            param4 = Entry(rootPar, width=35)
             submitAndEstimate = Button(rootPar, text="Submit", command=_sub)
             removeModel = Button(rootPar, text="Remove", command=_removeModel)
             
             # LABELS PLACING
-            param1Label.grid(row=0, column=0)
-            param2Label.grid(row=1, column=0)
-            param3Label.grid(row=2, column=0)
-            param4Label.grid(row=3, column=0)
+            param1Label.place(relx=0, rely=0)
+            param2Label.place(relx=0, rely=0.1)
+            param3Label.place(relx=0, rely=0.2)
+            param4Label.place(relx=0, rely=0.3)
             # ENTRY PLACING
-            param1.grid(row=0, column=2)
-            param2.grid(row=1, column=2)
-            param3.grid(row=2, column=2)
-            param4.grid(row=3, column=2)
-            submitAndEstimate.grid(row=5, column=2)
-            removeModel.grid(row=6, column=2)
+            param1.place(relx=0.4, rely=0)
+            param2.place(relx=0.4, rely=0.1)
+            param3.place(relx=0.4, rely=0.2)
+            param4.place(relx=0.4, rely=0.3)
+            submitAndEstimate.place(relx=0.3, rely=0.50, relwidth=0.35, relheight=0.2)
+            removeModel.place(relx=0.3, rely=0.70, relwidth=0.35, relheight=0.2)
 
             rootPar.mainloop()
 
         # THIS IS FOR MODEL 8 ---> VTUB SHAPED MODEL
         def vtubParamEst(modelObject):    
             rootPar = Toplevel(rootComp)
+            rootPar.title("VTub Model Initial Parameters")
+            rootPar.geometry("400x275")
 
             def _sub():
                 arrToOptimize = [
@@ -740,11 +815,17 @@ def compute(path):
 
                 minimizationResults = minimize(fun=modelObject.OLS, x0=arrToOptimize, args=(X, Y), method='Nelder-Mead')
                 modelMap[modelObject.name] = list(minimizationResults.x)
+                # CHANGING BUTTON COLOR
+                style.configure('Vtub.TButton', background='green')
+                #
                 rootPar.destroy()
             
             def _removeModel():
                 try:
                     modelMap[modelObject.name] = None
+                    # CHANGING BUTTON COLOR
+                    style.configure('Vtub.TButton', background='red')
+                    #
                     rootPar.destroy()
                     messagebox.showinfo(title='Model Removal', message="Model has been successfuly removed")
                 except:
@@ -755,34 +836,36 @@ def compute(path):
             param3Label = Label(rootPar, text="\u03B1 (total expenditure)") # THIS IS PARAMETER 'alpha' FOR YAMADA RAYLEIGH MODEL
             param4Label = Label(rootPar, text="\u03B2 (scale parameter)") # THIS IS PARAMETER 'beta' FOR YAMADA RAYLEIGH MODEL
             param5label = Label(rootPar, text="n")      # THIS IS PARAMETER 'n' FOR YAMADA RAYLEIGH MODEL
-            param1 = Entry(rootPar)
-            param2 = Entry(rootPar)
-            param3 = Entry(rootPar)
-            param4 = Entry(rootPar)
-            param5 = Entry(rootPar)
+            param1 = Entry(rootPar, width=35)
+            param2 = Entry(rootPar, width=35)
+            param3 = Entry(rootPar, width=35)
+            param4 = Entry(rootPar, width=35)
+            param5 = Entry(rootPar, width=35)
             submitAndEstimate = Button(rootPar, text="Submit", command=_sub)
             removeModel = Button(rootPar, text="Remove", command=_removeModel)
             
             # LABELS PLACING
-            param1Label.grid(row=0, column=0)
-            param2Label.grid(row=1, column=0)
-            param3Label.grid(row=2, column=0)
-            param4Label.grid(row=3, column=0)
-            param5label.grid(row=4, column=0)
+            param1Label.place(relx=0, rely=0)
+            param2Label.place(relx=0, rely=0.09)
+            param3Label.place(relx=0, rely=0.18)
+            param4Label.place(relx=0, rely=0.27)
+            param5label.place(relx=0, rely=0.36)
             # ENTRY PLACING
-            param1.grid(row=0, column=2)
-            param2.grid(row=1, column=2)
-            param3.grid(row=2, column=2)
-            param4.grid(row=3, column=2)
-            param5.grid(row=4, column=2)
-            submitAndEstimate.grid(row=5, column=2)
-            removeModel.grid(row=6, column=2)
+            param1.place(relx=0.4, rely=0)
+            param2.place(relx=0.4, rely=0.09)
+            param3.place(relx=0.4, rely=0.18)
+            param4.place(relx=0.4, rely=0.27)
+            param5.place(relx=0.4, rely=0.36)
+            submitAndEstimate.place(relx=0.3, rely=0.50, relwidth=0.35, relheight=0.2)
+            removeModel.place(relx=0.3, rely=0.7, relwidth=0.35, relheight=0.2)
 
             rootPar.mainloop()
 
         # THIS IS FOR MODEL 9 ---> RMD MODEL
         def rmdParamEst(modelObject):    
             rootPar = Toplevel(rootComp)
+            rootPar.title("RMD Model Initial Parameters")
+            rootPar.geometry("400x250")
 
             def _sub():
                 arrToOptimize = [
@@ -794,11 +877,17 @@ def compute(path):
 
                 minimizationResults = minimize(fun=modelObject.OLS, x0=arrToOptimize, args=(X, Y), method='Nelder-Mead')
                 modelMap[modelObject.name] = list(minimizationResults.x)
+                # CHANGING BUTTON COLOR
+                style.configure('RMD.TButton', background='green')
+                #
                 rootPar.destroy()
             
             def _removeModel():
                 try:
                     modelMap[modelObject.name] = None
+                    # CHANGING BUTTON COLOR
+                    style.configure('RMD.TButton', background='red')
+                    #
                     rootPar.destroy()
                     messagebox.showinfo(title='Model Removal', message="Model has been successfuly removed")
                 except:
@@ -808,31 +897,33 @@ def compute(path):
             param2Label = Label(rootPar, text="b (detection rate)")      # THIS IS PARAMETER 'b' FOR YAMADA RAYLEIGH MODEL
             param3Label = Label(rootPar, text="\u03B1 (total expenditure)") # THIS IS PARAMETER 'alpha' FOR YAMADA RAYLEIGH MODEL
             param4Label = Label(rootPar, text="\u03B2 (scale parameter)") # THIS IS PARAMETER 'beta' FOR YAMADA RAYLEIGH MODEL
-            param1 = Entry(rootPar)
-            param2 = Entry(rootPar)
-            param3 = Entry(rootPar)
-            param4 = Entry(rootPar)
+            param1 = Entry(rootPar, width=35)
+            param2 = Entry(rootPar, width=35)
+            param3 = Entry(rootPar, width=35)
+            param4 = Entry(rootPar, width=35)
             submitAndEstimate = Button(rootPar, text="Submit", command=_sub)
             removeModel = Button(rootPar, text="Remove", command=_removeModel)
             
             # LABELS PLACING
-            param1Label.grid(row=0, column=0)
-            param2Label.grid(row=1, column=0)
-            param3Label.grid(row=2, column=0)
-            param4Label.grid(row=3, column=0)
+            param1Label.place(relx=0, rely=0)
+            param2Label.place(relx=0, rely=0.1)
+            param3Label.place(relx=0, rely=0.2)
+            param4Label.place(relx=0, rely=0.3)
             # ENTRY PLACING
-            param1.grid(row=0, column=2)
-            param2.grid(row=1, column=2)
-            param3.grid(row=2, column=2)
-            param4.grid(row=3, column=2)
-            submitAndEstimate.grid(row=5, column=2)
-            removeModel.grid(row=6, column=2)
+            param1.place(relx=0.4, rely=0)
+            param2.place(relx=0.4, rely=0.1)
+            param3.place(relx=0.4, rely=0.2)
+            param4.place(relx=0.4, rely=0.3)
+            submitAndEstimate.place(relx=0.3, rely=0.50, relwidth=0.35, relheight=0.2)
+            removeModel.place(relx=0.3, rely=0.70, relwidth=0.35, relheight=0.2)
 
             rootPar.mainloop()
         
         # THIS IS FOR MODEL 10 ---> CHANGS MODEL
         def changParamEst(modelObject):    
             rootPar = Toplevel(rootComp)
+            rootPar.title("Chang et al's Model Initial Parameters")
+            rootPar.geometry("400x275")
 
             def _sub():
                 arrToOptimize = [
@@ -845,11 +936,17 @@ def compute(path):
 
                 minimizationResults = minimize(fun=modelObject.OLS, x0=arrToOptimize, args=(X, Y), method='Nelder-Mead')
                 modelMap[modelObject.name] = list(minimizationResults.x)
+                # CHANGING BUTTON COLOR
+                style.configure('Changs.TButton', background='green')
+                #
                 rootPar.destroy()
             
             def _removeModel():
                 try:
                     modelMap[modelObject.name] = None
+                    # CHANGING BUTTON COLOR
+                    style.configure('Changs.TButton', background='red')
+                    #
                     rootPar.destroy()
                     messagebox.showinfo(title='Model Removal', message="Model has been successfuly removed")
                 except:
@@ -860,43 +957,43 @@ def compute(path):
             param3Label = Label(rootPar, text="\u03B1 (total expenditure)") # THIS IS PARAMETER 'alpha' FOR YAMADA RAYLEIGH MODEL
             param4Label = Label(rootPar, text="\u03B2 (scale parameter)") # THIS IS PARAMETER 'beta' FOR YAMADA RAYLEIGH MODEL
             param5label = Label(rootPar, text="n")      # THIS IS PARAMETER 'n' FOR YAMADA RAYLEIGH MODEL
-            param1 = Entry(rootPar)
-            param2 = Entry(rootPar)
-            param3 = Entry(rootPar)
-            param4 = Entry(rootPar)
-            param5 = Entry(rootPar)
+            param1 = Entry(rootPar, width=35)
+            param2 = Entry(rootPar, width=35)
+            param3 = Entry(rootPar, width=35)
+            param4 = Entry(rootPar, width=35)
+            param5 = Entry(rootPar, width=35)
             submitAndEstimate = Button(rootPar, text="Submit", command=_sub)
             removeModel = Button(rootPar, text="Remove", command=_removeModel)
             
             # LABELS PLACING
-            param1Label.grid(row=0, column=0)
-            param2Label.grid(row=1, column=0)
-            param3Label.grid(row=2, column=0)
-            param4Label.grid(row=3, column=0)
-            param5label.grid(row=4, column=0)
+            param1Label.place(relx=0, rely=0)
+            param2Label.place(relx=0, rely=0.09)
+            param3Label.place(relx=0, rely=0.18)
+            param4Label.place(relx=0, rely=0.27)
+            param5label.place(relx=0, rely=0.36)
             # ENTRY PLACING
-            param1.grid(row=0, column=2)
-            param2.grid(row=1, column=2)
-            param3.grid(row=2, column=2)
-            param4.grid(row=3, column=2)
-            param5.grid(row=4, column=2)
-            submitAndEstimate.grid(row=5, column=2)
-            removeModel.grid(row=6, column=2)
+            param1.place(relx=0.4, rely=0)
+            param2.place(relx=0.4, rely=0.09)
+            param3.place(relx=0.4, rely=0.18)
+            param4.place(relx=0.4, rely=0.27)
+            param5.place(relx=0.4, rely=0.36)
+            submitAndEstimate.place(relx=0.3, rely=0.50, relwidth=0.35, relheight=0.2)
+            removeModel.place(relx=0.3, rely=0.7, relwidth=0.35, relheight=0.2)
 
             rootPar.mainloop()
 
         # ADDING BUTTONS TO INPUT MODEL PARAMETERS
         modelsLabel = Label(canvas, text="Models")
-        model1 = Button(canvas, text='GO Model', command=lambda: goModelParamEst(gomodel))
-        model2 = Button(canvas, text="Yamada Rayleigh", command=lambda: yamadaRayleighParamEst(yamadaR))
-        model3 = Button(canvas, text="Delayed S", command=lambda: delayedSParamEst(delayedS))
-        model4 = Button(canvas, text="Inflection S", command=lambda: inflectionSParamEst(inflectionS))
-        model5 = Button(canvas, text="Yamada Imperfect 1", command=lambda: yamadaImperfect1ParamEst(yamadaImperfect1))
-        model6 = Button(canvas, text="Yamada Imperfect 2", command=lambda: yamadaImperfect2ParamEst(yamadaImperfect2))
-        model7 = Button(canvas, text="Yamada Exponential", command=lambda: yamadaExponentialParamEst(yamadaExponential))
-        model8 = Button(canvas, text="Vtub Shaped", command=lambda: vtubParamEst(vtub))
-        model9 = Button(canvas, text="RMD", command=lambda: rmdParamEst(rmd))
-        model10 = Button(canvas, text="Chang et al\'s", command=lambda: changParamEst(changs))
+        model1 = Button(canvas, text='GO Model', style='GO.TButton', command=lambda: goModelParamEst(gomodel))
+        model2 = Button(canvas, text="Yamada Rayleigh", style='YamadaRay.TButton', command=lambda: yamadaRayleighParamEst(yamadaR))
+        model3 = Button(canvas, text="Delayed S", style='Delayed.TButton', command=lambda: delayedSParamEst(delayedS))
+        model4 = Button(canvas, text="Inflection S", style='Inflection.TButton', command=lambda: inflectionSParamEst(inflectionS))
+        model5 = Button(canvas, text="Yamada Imperfect 1", style='YamadaIm1.TButton', command=lambda: yamadaImperfect1ParamEst(yamadaImperfect1))
+        model6 = Button(canvas, text="Yamada Imperfect 2", style='YamadaIm2.TButton', command=lambda: yamadaImperfect2ParamEst(yamadaImperfect2))
+        model7 = Button(canvas, text="Yamada Exponential", style='YamadaExpo.TButton', command=lambda: yamadaExponentialParamEst(yamadaExponential))
+        model8 = Button(canvas, text="Vtub Shaped", style='Vtub.TButton', command=lambda: vtubParamEst(vtub))
+        model9 = Button(canvas, text="RMD", style='RMD.TButton', command=lambda: rmdParamEst(rmd))
+        model10 = Button(canvas, text="Chang et al\'s", style='Changs.TButton', command=lambda: changParamEst(changs))
 
         # COMPUTATION BUTTONS
         computationLabel = Label(canvas, text="Calculation of Criterias & Rank")
@@ -904,7 +1001,7 @@ def compute(path):
         calculateCriteria = Button(canvas, text="Calculate Criterias", command=lambda: computeC(path))
 
         # ADDING PREVIOUSLY CREATED BUTTONS
-        modelsLabel.place(relx=0.245, rely=0, relheight=0.08)
+        modelsLabel.place(relx=0.245, rely=0.01, relheight=0.05)
         model1.place(relx= 0.1, rely=0.08, relwidth=0.35, relheight=0.08)
         model2.place(relx= 0.1, rely=0.16, relwidth=0.35, relheight=0.08)
         model3.place(relx= 0.1, rely=0.24, relwidth=0.35, relheight=0.08)
@@ -922,7 +1019,7 @@ def compute(path):
         calculateCriteria.place(relx= 0.55, rely=0.4, relwidth=0.35, relheight=0.1)
 
         rootComp.mainloop()
-    except FileNotFoundError:
+    else:
         showerror(title="Dataset not loaded", message='Please enter the correct path of dataset and press the load button')
 
 #------------------------------------------------------------------------------------------------------------------------
@@ -930,11 +1027,15 @@ def compute(path):
 # MAIN FUNCTION
 def main():
     global root
+    global loaded
+
     root = Tk()
     root.title("Reliability DSS")
     root.geometry("500x250")
 
     path = StringVar()
+    loaded = BooleanVar(False)
+    # loaded.set(False)
 
     rootCanvas = Canvas(root, width=500, height=250)
     rootCanvas.pack()
@@ -942,7 +1043,7 @@ def main():
     modelButton = Button(rootCanvas, text='Models & Computation', command=lambda: compute(pathEntry.get())) # SUBSTITUTE WITH THE models OVER HERE
     
     pathEntry = Entry(rootCanvas, width=35)
-    loadButton = Button(rootCanvas, text='Load Dataset', command=lambda: loadData(pathEntry.get(), path))
+    loadButton = Button(rootCanvas, text='Load Dataset', command=lambda: loadData(pathEntry.get(), path, loaded))
     viewButton = Button(rootCanvas, text='View Dataset', command=lambda: viewData(pathEntry.get()))
     closeButton = Button(rootCanvas, text='Close', command=root.destroy)
     # PLACING THE BUTTONS  
