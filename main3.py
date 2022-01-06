@@ -1,6 +1,5 @@
+from os import name
 from tkinter import *
-from tkinter import messagebox
-from tkinter.font import Font
 from tkinter.ttk import *
 from tkinter.messagebox import *
 from routines import *
@@ -68,12 +67,12 @@ def display():
     else:
         rootDisp = Toplevel(root)
         rootDisp.title("Estimated Parameters")
-        # rootDisp.geometry()
     
         for i in range(len(computedModels)):
             model = computedModels[i]
             labelParams = paramMap[model]
             estimatedParams = modelMap[model]
+            estimatedMSE = mseMap[model]
             paramString = ""
             # CREATING THE STRING FOR PARAMETERS
             for j in range(len(labelParams)):
@@ -83,6 +82,8 @@ def display():
                 paramString += parameter + "   :   " + parameterValue + "\n"
             # A LITTLE FORMATTING OF DATA
             model = model + "  "
+            # ADDING MSE TO ESTIMATED PARAMETERS
+            paramString += "MSE" + "   :   " + str(np.round_(estimatedMSE, decimals=4)) + "\n"
             paramString = "\n" + paramString
             # ADDING MODEL AND PARAMETERS FOR DISPLAY IN THE WINDOW
             modelLabel = Label(rootDisp, text=model)
@@ -266,7 +267,7 @@ def computeR(path):
             tree.grid(row=0, column=0)
             rootRank.mainloop()
         else:
-            messagebox.showinfo(title="Technique Missing", message="Please select a technique to rank the models")
+            showinfo(title="Technique Missing", message="Please select a technique to rank the models")
 
     r1 = Radiobutton(rootR, text='Entropy & TOPSIS', variable=var, value=1)
     submitButton = Button(rootR, text='Submit', command=lambda: calculateRanks(path))
@@ -376,6 +377,7 @@ def compute(path):
         # MODEL AND ESTIMATED PARAMETER HASHMAP
         global modelMap
         global paramMap
+        global mseMap
         modelMap = {
             'GO': None,
             'Delayed S Shaped': None,
@@ -388,6 +390,20 @@ def compute(path):
             'RMD': None,
             'Chang et al\'s': None
         }
+
+        mseMap = {
+            'GO': np.inf,
+            'Delayed S Shaped': np.inf,
+            'Inflection S Shaped': np.inf,
+            'Yamada Rayleigh': np.inf,
+            'Yamada Imperfect 1': np.inf,
+            'Yamada Imperfect 2': np.inf,
+            'Yamada Exponential': np.inf,
+            'Vtub Shaped': np.inf,
+            'RMD': np.inf,
+            'Chang et al\'s': np.inf
+        }
+
         paramMap = {
             'GO': ['a', 'b'],                                          # a, b
             'Delayed S Shaped': ['a', 'b'],                            # a, b
@@ -406,12 +422,9 @@ def compute(path):
         rootComp.title("Models")
 
         canvas = Canvas(rootComp, width=800, height=500)
-        # canvas.create_line()
         canvas.pack()
 
-        # TESTING ---> IT WORKS BUT ONLY NEED TO APPLY ON SOME BUTTONS, NOT ALL
         style = Style()
-        # style.theme_use('alt')
         style.configure('GO.TButton', background = 'red')
         style.configure('Delayed.TButton', background = 'red')
         style.configure('Inflection.TButton', background = 'red')
@@ -440,7 +453,18 @@ def compute(path):
                     float(param2.get())
                 ]
                 minimizationResults = minimize(fun=modelObject.OLS, x0=arrToOptimize, args=(X, Y), method='Nelder-Mead')
-                modelMap[modelObject.name] = list(minimizationResults.x)
+                estimatesdParams = list(minimizationResults.x)
+                mse = np.round_(modelObject.mse(estimatesdParams, X, Y), decimals=4)
+                # CHECKING WETHER CALCULATED MSE IS SMALLER THAN THE STORED MSE/ PREVIOUS MSE
+                if(mse < mseMap[modelObject.name]):
+                    mseMap[modelObject.name] = mse
+                    modelMap[modelObject.name] = list(minimizationResults.x)
+                else:
+                    rootPar.destroy()
+                    showinfo(title="MSE increased", message="MSE has increased over the given model parameters")
+                
+                print(mse < mseMap[modelObject.name])
+
                 # CHANGING BUTTON COLOR
                 style.configure('GO.TButton', background='green')
                 #
@@ -454,9 +478,9 @@ def compute(path):
                     style.configure('GO.TButton', background='red')
                     #
                     rootPar.destroy()
-                    messagebox.showinfo(title='Model Removal', message="Model has been successfuly removed")
+                    showinfo(title='Model Removal', message="Model has been successfuly removed")
                 except:
-                    messagebox.showinfo(title='Model Removal', message="Error occured while removing model")
+                    showinfo(title='Model Removal', message="Error occured while removing model")
 
             param1Label = Label(rootPar, text="a (cummulative faults)")
             param2Label = Label(rootPar, text="b (detection rate)")
@@ -487,7 +511,18 @@ def compute(path):
                     float(param2.get())
                 ]
                 minimizationResults = minimize(fun=modelObject.OLS, x0=arrToOptimize, args=(X, Y), method='Nelder-Mead')
-                modelMap[modelObject.name] = list(minimizationResults.x)
+                estimatesdParams = list(minimizationResults.x)
+                mse = np.round_(modelObject.mse(estimatesdParams, X, Y), decimals=4)
+                # CHECKING WETHER CALCULATED MSE IS SMALLER THAN THE STORED MSE/ PREVIOUS MSE
+                if(mse < mseMap[modelObject.name]):
+                    mseMap[modelObject.name] = mse
+                    modelMap[modelObject.name] = list(minimizationResults.x)
+                else:
+                    rootPar.destroy()
+                    showinfo(title="MSE increased", message="MSE has increased over the given model parameters")
+                
+                print(mse < mseMap[modelObject.name])
+
                 # CHANGING BUTTON COLOR
                 style.configure('Delayed.TButton', background='green')
                 #
@@ -500,9 +535,9 @@ def compute(path):
                     style.configure('Delayed.TButton', background='red')
                     #
                     rootPar.destroy()
-                    messagebox.showinfo(title='Model Removal', message="Model has been successfuly removed")
+                    showinfo(title='Model Removal', message="Model has been successfuly removed")
                 except:
-                    messagebox.showinfo(title='Model Removal', message="Error occured while removing model")
+                    showinfo(title='Model Removal', message="Error occured while removing model")
 
             param1Label = Label(rootPar, text="a (cummulative faults)")
             param2Label = Label(rootPar, text="b (detection rate)")
@@ -536,7 +571,18 @@ def compute(path):
                 ]
 
                 minimizationResults = minimize(fun=modelObject.OLS, x0=arrToOptimize, args=(X, Y), method='Nelder-Mead')
-                modelMap[modelObject.name] = list(minimizationResults.x)
+                estimatesdParams = list(minimizationResults.x)
+                mse = np.round_(modelObject.mse(estimatesdParams, X, Y), decimals=4)
+                # CHECKING WETHER CALCULATED MSE IS SMALLER THAN THE STORED MSE/ PREVIOUS MSE
+                if(mse < mseMap[modelObject.name]):
+                    mseMap[modelObject.name] = mse
+                    modelMap[modelObject.name] = list(minimizationResults.x)
+                else:
+                    rootPar.destroy()
+                    showinfo(title="MSE increased", message="MSE has increased over the given model parameters")
+                
+                print(mse < mseMap[modelObject.name])
+
                 # CHANGING BUTTON COLOR
                 style.configure('Inflection.TButton', background='green')
                 #
@@ -549,9 +595,9 @@ def compute(path):
                     style.configure('Inflection.TButton', background='red')
                     #
                     rootPar.destroy()
-                    messagebox.showinfo(title='Model Removal', message="Model has been successfuly removed")
+                    showinfo(title='Model Removal', message="Model has been successfuly removed")
                 except:
-                    messagebox.showinfo(title='Model Removal', message="Error occured while removing model")
+                    showinfo(title='Model Removal', message="Error occured while removing model")
 
             param1Label = Label(rootPar, text="a (cummulative faults)")  # THIS IS PARAMETER 'a' FOR INFLECTION S MODEL
             param2Label = Label(rootPar, text="b (detection rate)")  # THIS IS PARAMETER 'b' FOR INFLECTION S MODEL
@@ -590,7 +636,18 @@ def compute(path):
                 ]
 
                 minimizationResults = minimize(fun=modelObject.OLS, x0=arrToOptimize, args=(X, Y), method='Nelder-Mead')
-                modelMap[modelObject.name] = list(minimizationResults.x)
+                estimatesdParams = list(minimizationResults.x)
+                mse = np.round_(modelObject.mse(estimatesdParams, X, Y), decimals=4)
+                # CHECKING WETHER CALCULATED MSE IS SMALLER THAN THE STORED MSE/ PREVIOUS MSE
+                if(mse < mseMap[modelObject.name]):
+                    mseMap[modelObject.name] = mse
+                    modelMap[modelObject.name] = list(minimizationResults.x)
+                else:
+                    rootPar.destroy()
+                    showinfo(title="MSE increased", message="MSE has increased over the given model parameters")
+                
+                print(mse < mseMap[modelObject.name])
+
                 # CHANGING BUTTON COLOR
                 style.configure('YamadaRay.TButton', background='green')
                 #
@@ -603,9 +660,9 @@ def compute(path):
                     style.configure('YamadaRay.TButton', background='red')
                     #
                     rootPar.destroy()
-                    messagebox.showinfo(title='Model Removal', message="Model has been successfuly removed")
+                    showinfo(title='Model Removal', message="Model has been successfuly removed")
                 except:
-                    messagebox.showinfo(title='Model Removal', message="Error occured while removing model")
+                    showinfo(title='Model Removal', message="Error occured while removing model")
 
             param1Label = Label(rootPar, text="a (cummulative faults)")      # THIS IS PARAMETER 'a' FOR YAMADA RAYLEIGH MODEL
             param2Label = Label(rootPar, text="\u03B1 (total expenditure)") # THIS IS PARAMETER 'alpha' FOR YAMADA RAYLEIGH MODEL
@@ -647,7 +704,18 @@ def compute(path):
                 ]
 
                 minimizationResults = minimize(fun=modelObject.OLS, x0=arrToOptimize, args=(X, Y), method='Nelder-Mead')
-                modelMap[modelObject.name] = list(minimizationResults.x)
+                estimatesdParams = list(minimizationResults.x)
+                mse = np.round_(modelObject.mse(estimatesdParams, X, Y), decimals=4)
+                # CHECKING WETHER CALCULATED MSE IS SMALLER THAN THE STORED MSE/ PREVIOUS MSE
+                if(mse < mseMap[modelObject.name]):
+                    mseMap[modelObject.name] = mse
+                    modelMap[modelObject.name] = list(minimizationResults.x)
+                else:
+                    rootPar.destroy()
+                    showinfo(title="MSE increased", message="MSE has increased over the given model parameters")
+                
+                print(mse < mseMap[modelObject.name])
+
                 # CHANGING BUTTON COLOR
                 style.configure('YamadaIm1.TButton', background='green')
                 #
@@ -660,9 +728,9 @@ def compute(path):
                     style.configure('YamadaIm1.TButton', background='red')
                     #
                     rootPar.destroy()
-                    messagebox.showinfo(title='Model Removal', message="Model has been successfuly removed")
+                    showinfo(title='Model Removal', message="Model has been successfuly removed")
                 except:
-                    messagebox.showinfo(title='Model Removal', message="Error occured while removing model")
+                    showinfo(title='Model Removal', message="Error occured while removing model")
 
             param1Label = Label(rootPar, text="a (cummulative faults)")      # THIS IS PARAMETER 'a' FOR YAMADA IMPERFECT 1 MODEL
             param2Label = Label(rootPar, text="b (detection rate)")      # THIS IS PARAMETER 'b' FOR YAMADA IMPERFECT 1 MODEL
@@ -701,7 +769,18 @@ def compute(path):
                 ]
 
                 minimizationResults = minimize(fun=modelObject.OLS, x0=arrToOptimize, args=(X, Y), method='Nelder-Mead')
-                modelMap[modelObject.name] = list(minimizationResults.x)
+                estimatesdParams = list(minimizationResults.x)
+                mse = np.round_(modelObject.mse(estimatesdParams, X, Y), decimals=4)
+                # CHECKING WETHER CALCULATED MSE IS SMALLER THAN THE STORED MSE/ PREVIOUS MSE
+                if(mse < mseMap[modelObject.name]):
+                    mseMap[modelObject.name] = mse
+                    modelMap[modelObject.name] = list(minimizationResults.x)
+                else:
+                    rootPar.destroy()
+                    showinfo(title="MSE increased", message="MSE has increased over the given model parameters")
+                
+                print(mse < mseMap[modelObject.name])
+
                 # CHANGING BUTTON COLOR
                 style.configure('YamadaIm2.TButton', background='green')
                 #
@@ -714,9 +793,9 @@ def compute(path):
                     style.configure('YamadaIm2.TButton', background='red')
                     #
                     rootPar.destroy()
-                    messagebox.showinfo(title='Model Removal', message="Model has been successfuly removed")
+                    showinfo(title='Model Removal', message="Model has been successfuly removed")
                 except:
-                    messagebox.showinfo(title='Model Removal', message="Error occured while removing model")
+                    showinfo(title='Model Removal', message="Error occured while removing model")
 
             param1Label = Label(rootPar, text="a (cummulative faults)")      # THIS IS PARAMETER 'a' FOR YAMADA IMPERFECT 1 MODEL
             param2Label = Label(rootPar, text="b (detection rate)")      # THIS IS PARAMETER 'b' FOR YAMADA IMPERFECT 1 MODEL
@@ -755,7 +834,18 @@ def compute(path):
                 ]
 
                 minimizationResults = minimize(fun=modelObject.OLS, x0=arrToOptimize, args=(X, Y), method='Nelder-Mead')
-                modelMap[modelObject.name] = list(minimizationResults.x)
+                estimatesdParams = list(minimizationResults.x)
+                mse = np.round_(modelObject.mse(estimatesdParams, X, Y), decimals=4)
+                # CHECKING WETHER CALCULATED MSE IS SMALLER THAN THE STORED MSE/ PREVIOUS MSE
+                if(mse < mseMap[modelObject.name]):
+                    mseMap[modelObject.name] = mse
+                    modelMap[modelObject.name] = list(minimizationResults.x)
+                else:
+                    rootPar.destroy()
+                    showinfo(title="MSE increased", message="MSE has increased over the given model parameters")
+                
+                print(mse < mseMap[modelObject.name])
+
                 # CHANGING BUTTON COLOR
                 style.configure('YamadaExpo.TButton', background='green')
                 #
@@ -768,9 +858,9 @@ def compute(path):
                     style.configure('YamadaExpo.TButton', background='red')
                     #
                     rootPar.destroy()
-                    messagebox.showinfo(title='Model Removal', message="Model has been successfuly removed")
+                    showinfo(title='Model Removal', message="Model has been successfuly removed")
                 except:
-                    messagebox.showinfo(title='Model Removal', message="Error occured while removing model")
+                    showinfo(title='Model Removal', message="Error occured while removing model")
 
             param1Label = Label(rootPar, text="a (cummulative faults)")      # THIS IS PARAMETER 'a' FOR YAMADA RAYLEIGH MODEL
             param2Label = Label(rootPar, text="\u03B1 (total expenditure)") # THIS IS PARAMETER 'alpha' FOR YAMADA RAYLEIGH MODEL
@@ -814,7 +904,18 @@ def compute(path):
                 ]
 
                 minimizationResults = minimize(fun=modelObject.OLS, x0=arrToOptimize, args=(X, Y), method='Nelder-Mead')
-                modelMap[modelObject.name] = list(minimizationResults.x)
+                estimatesdParams = list(minimizationResults.x)
+                mse = np.round_(modelObject.mse(estimatesdParams, X, Y), decimals=4)
+                # CHECKING WETHER CALCULATED MSE IS SMALLER THAN THE STORED MSE/ PREVIOUS MSE
+                if(mse < mseMap[modelObject.name]):
+                    mseMap[modelObject.name] = mse
+                    modelMap[modelObject.name] = list(minimizationResults.x)
+                else:
+                    rootPar.destroy()
+                    showinfo(title="MSE increased", message="MSE has increased over the given model parameters")
+                
+                print(mse < mseMap[modelObject.name])
+
                 # CHANGING BUTTON COLOR
                 style.configure('Vtub.TButton', background='green')
                 #
@@ -827,9 +928,9 @@ def compute(path):
                     style.configure('Vtub.TButton', background='red')
                     #
                     rootPar.destroy()
-                    messagebox.showinfo(title='Model Removal', message="Model has been successfuly removed")
+                    showinfo(title='Model Removal', message="Model has been successfuly removed")
                 except:
-                    messagebox.showinfo(title='Model Removal', message="Error occured while removing model")
+                    showinfo(title='Model Removal', message="Error occured while removing model")
 
             param1Label = Label(rootPar, text="a (cummulative faults)")      # THIS IS PARAMETER 'a' FOR YAMADA RAYLEIGH MODEL
             param2Label = Label(rootPar, text="b (detection rate)")      # THIS IS PARAMETER 'b' FOR YAMADA RAYLEIGH MODEL
@@ -876,7 +977,18 @@ def compute(path):
                 ]
 
                 minimizationResults = minimize(fun=modelObject.OLS, x0=arrToOptimize, args=(X, Y), method='Nelder-Mead')
-                modelMap[modelObject.name] = list(minimizationResults.x)
+                estimatesdParams = list(minimizationResults.x)
+                mse = np.round_(modelObject.mse(estimatesdParams, X, Y), decimals=4)
+                # CHECKING WETHER CALCULATED MSE IS SMALLER THAN THE STORED MSE/ PREVIOUS MSE
+                if(mse < mseMap[modelObject.name]):
+                    mseMap[modelObject.name] = mse
+                    modelMap[modelObject.name] = list(minimizationResults.x)
+                else:
+                    rootPar.destroy()
+                    showinfo(title="MSE increased", message="MSE has increased over the given model parameters")
+                
+                print(mse < mseMap[modelObject.name])
+
                 # CHANGING BUTTON COLOR
                 style.configure('RMD.TButton', background='green')
                 #
@@ -889,9 +1001,9 @@ def compute(path):
                     style.configure('RMD.TButton', background='red')
                     #
                     rootPar.destroy()
-                    messagebox.showinfo(title='Model Removal', message="Model has been successfuly removed")
+                    showinfo(title='Model Removal', message="Model has been successfuly removed")
                 except:
-                    messagebox.showinfo(title='Model Removal', message="Error occured while removing model")
+                    showinfo(title='Model Removal', message="Error occured while removing model")
 
             param1Label = Label(rootPar, text="a (cummulative faults)")      # THIS IS PARAMETER 'a' FOR YAMADA RAYLEIGH MODEL
             param2Label = Label(rootPar, text="b (detection rate)")      # THIS IS PARAMETER 'b' FOR YAMADA RAYLEIGH MODEL
@@ -935,7 +1047,18 @@ def compute(path):
                 ]
 
                 minimizationResults = minimize(fun=modelObject.OLS, x0=arrToOptimize, args=(X, Y), method='Nelder-Mead')
-                modelMap[modelObject.name] = list(minimizationResults.x)
+                estimatesdParams = list(minimizationResults.x)
+                mse = np.round_(modelObject.mse(estimatesdParams, X, Y), decimals=4)
+                # CHECKING WETHER CALCULATED MSE IS SMALLER THAN THE STORED MSE/ PREVIOUS MSE
+                if(mse < mseMap[modelObject.name]):
+                    mseMap[modelObject.name] = mse
+                    modelMap[modelObject.name] = list(minimizationResults.x)
+                else:
+                    rootPar.destroy()
+                    showinfo(title="MSE increased", message="MSE has increased over the given model parameters")
+                
+                print(mse < mseMap[modelObject.name])
+
                 # CHANGING BUTTON COLOR
                 style.configure('Changs.TButton', background='green')
                 #
@@ -948,9 +1071,9 @@ def compute(path):
                     style.configure('Changs.TButton', background='red')
                     #
                     rootPar.destroy()
-                    messagebox.showinfo(title='Model Removal', message="Model has been successfuly removed")
+                    showinfo(title='Model Removal', message="Model has been successfuly removed")
                 except:
-                    messagebox.showinfo(title='Model Removal', message="Error occured while removing model")
+                    showinfo(title='Model Removal', message="Error occured while removing model")
 
             param1Label = Label(rootPar, text="a (cummulative faults)")      # THIS IS PARAMETER 'a' FOR YAMADA RAYLEIGH MODEL
             param2Label = Label(rootPar, text="b (detection rate)")      # THIS IS PARAMETER 'b' FOR YAMADA RAYLEIGH MODEL
