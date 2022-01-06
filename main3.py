@@ -112,160 +112,163 @@ def computeR(path):
                 if param:
                     data.append([model, param]) # THE FIRST ARG ---> STRING, SECOND ARG ---> PARAMETERS
 
-            # GETTING THE DATA FROM DATASET IN ORDER TO CALCULATE PERFORMANCE CRITERIA
-            dataset = pd.read_csv(path)
-            X = dataset['Time']
-            Y = dataset['CDF']
+            if len(data) < 2:
+                showerror(title='Cannot run TOPSIS', message="None or less models have been selected, TOPSIS requires atleast 2 models.")
+            else:
+                # GETTING THE DATA FROM DATASET IN ORDER TO CALCULATE PERFORMANCE CRITERIA
+                dataset = pd.read_csv(path)
+                X = dataset['Time']
+                Y = dataset['CDF']
 
-            # FOR CREATING ENTRIES IN data:
-            rootRank = Toplevel(root)
-            rootRank.title("Ranks")
-            rootRank.resizable(False, False)
+                # FOR CREATING ENTRIES IN data:
+                rootRank = Toplevel(root)
+                rootRank.title("Ranks")
+                rootRank.resizable(False, False)
 
-            modelRoutines = [
-                gomodel,
-                yamadaR,
-                delayedS,
-                inflectionS,
-                yamadaImperfect1,
-                yamadaImperfect2,
-                yamadaExponential,
-                vtub,
-                rmd,
-                changs
-            ]
-            criteriaData = []
+                modelRoutines = [
+                    gomodel,
+                    yamadaR,
+                    delayedS,
+                    inflectionS,
+                    yamadaImperfect1,
+                    yamadaImperfect2,
+                    yamadaExponential,
+                    vtub,
+                    rmd,
+                    changs
+                ]
+                criteriaData = []
 
 
-            # VALIDATING THE DATABASE KEYS WITH MODEL NAMES 
-            for selected in data:
-                criterias = []
-                for model in modelRoutines:
-                    if selected[0] == model.name:
-                        params = selected[1]
-                        mse = model.mse(params, X, Y)
-                        mae = model.mae(params, X, Y)
-                        r2 = model.rsquare(params, X, Y)
-                        adr = model.adrsquare(params, X, Y)
-                        pp = model.PP(params, X, Y)             
-                        aic = model.aic(params, X, Y)
-                        meop = model.meop(params, X, Y)
-                        theil = model.theil(params, X, Y) 
+                # VALIDATING THE DATABASE KEYS WITH MODEL NAMES 
+                for selected in data:
+                    criterias = []
+                    for model in modelRoutines:
+                        if selected[0] == model.name:
+                            params = selected[1]
+                            mse = model.mse(params, X, Y)
+                            mae = model.mae(params, X, Y)
+                            r2 = model.rsquare(params, X, Y)
+                            adr = model.adrsquare(params, X, Y)
+                            pp = model.PP(params, X, Y)             
+                            aic = model.aic(params, X, Y)
+                            meop = model.meop(params, X, Y)
+                            theil = model.theil(params, X, Y) 
 
-                        criterias = [mse, mae, r2, adr, aic, pp, meop, theil] # WHILE ADDING COLUMNS TO THE TREEVIEW MAKE SURE TO ENTER THE COLUMNS IN THIS ORDER OF CRITERIA ONLY
-                        break
-                criterias.insert(0, selected[0])
-                criteriaData.append(criterias)
+                            criterias = [mse, mae, r2, adr, aic, pp, meop, theil] # WHILE ADDING COLUMNS TO THE TREEVIEW MAKE SURE TO ENTER THE COLUMNS IN THIS ORDER OF CRITERIA ONLY
+                            break
+                    criterias.insert(0, selected[0])
+                    criteriaData.append(criterias)
 
-            # CALCULATE TOPSIS OVER HERE--------------------------------
+                # CALCULATE TOPSIS OVER HERE--------------------------------
 
-            cdata = []
-            for modelData in criteriaData:
-                cdata.append(modelData[1:])
-            cdata = np.array(cdata)
+                cdata = []
+                for modelData in criteriaData:
+                    cdata.append(modelData[1:])
+                cdata = np.array(cdata)
 
-            n = cdata.shape[0] # number of models
-            m = cdata.shape[1] # number of criterias
+                n = cdata.shape[0] # number of models
+                m = cdata.shape[1] # number of criterias
 
-            # SO FAR SO GOOD
-            # CALCULATING THE WEIGHT MATRIX ----------------------------------------------
+                # SO FAR SO GOOD
+                # CALCULATING THE WEIGHT MATRIX ----------------------------------------------
 
-            # normalizing the weight matrix
-            P = cdata / np.sum(cdata, axis=0)
-            # calculating the entropy vector
-            e = (-1) * np.sum(P * np.log(P), axis=0) / np.log(n)
-            # calculating the degree of diversification
-            d = 1-e
-            # calculating the weights
-            w = d / np.sum(d)
+                # normalizing the weight matrix
+                P = cdata / np.sum(cdata, axis=0)
+                # calculating the entropy vector
+                e = (-1) * np.sum(P * np.log(P), axis=0) / np.log(n)
+                # calculating the degree of diversification
+                d = 1-e
+                # calculating the weights
+                w = d / np.sum(d)
 
-            # CALCULATED THE WEIGHT MATRIX -----------------------------------------------
-            # CALCULATING THE RANK -------------------------------------------------------
-            y = cdata / np.sqrt(np.sum(cdata**2, axis=0))
-            v = w * y
+                # CALCULATED THE WEIGHT MATRIX -----------------------------------------------
+                # CALCULATING THE RANK -------------------------------------------------------
+                y = cdata / np.sqrt(np.sum(cdata**2, axis=0))
+                v = w * y
 
-            vpos = []
-            vneg = []
+                vpos = []
+                vneg = []
 
-            criteria_map = {
-                'mse': v[:, 0],
-                'mae': v[:, 1],
-                'r2': v[:, 2],
-                'adjr2': v[:, 3],
-                'aic': v[: 4],
-                'pp': v[:, 5],
-                'meop': v[:, 6],
-                'theil': v[: 7]
-            }
-            maximizer = ['r2', 'adjr2']
-            minimizer = ['mse', 'mae', 'pp', 'meop', 'aic', 'theil']
+                criteria_map = {
+                    'mse': v[:, 0],
+                    'mae': v[:, 1],
+                    'r2': v[:, 2],
+                    'adjr2': v[:, 3],
+                    'aic': v[: 4],
+                    'pp': v[:, 5],
+                    'meop': v[:, 6],
+                    'theil': v[: 7]
+                }
+                maximizer = ['r2', 'adjr2']
+                minimizer = ['mse', 'mae', 'pp', 'meop', 'aic', 'theil']
 
-            for criteria in criteria_map:
-                if criteria in maximizer:
-                    best = np.amax(criteria_map[criteria])
-                    worst = np.amin(criteria_map[criteria])
-                    vpos.append(best)
-                    vneg.append(worst)
-                if criteria in minimizer:
-                    best = np.amin(criteria_map[criteria])
-                    worst = np.amax(criteria_map[criteria])
-                    vpos.append(best)
-                    vneg.append(worst)
+                for criteria in criteria_map:
+                    if criteria in maximizer:
+                        best = np.amax(criteria_map[criteria])
+                        worst = np.amin(criteria_map[criteria])
+                        vpos.append(best)
+                        vneg.append(worst)
+                    if criteria in minimizer:
+                        best = np.amin(criteria_map[criteria])
+                        worst = np.amax(criteria_map[criteria])
+                        vpos.append(best)
+                        vneg.append(worst)
 
-            # converting ideal best and ideal worst data to usable form
-            vpos = np.array(vpos)
-            vneg = np.array(vneg)
+                # converting ideal best and ideal worst data to usable form
+                vpos = np.array(vpos)
+                vneg = np.array(vneg)
 
-            spos = np.sqrt(np.sum( (v-vpos)**2 , axis=1))
-            sneg = np.sqrt(np.sum( (v-vneg)**2 , axis=1))
+                spos = np.sqrt(np.sum( (v-vpos)**2 , axis=1))
+                sneg = np.sqrt(np.sum( (v-vneg)**2 , axis=1))
 
-            # final relative closeness results
-            c = sneg / (spos + sneg)
+                # final relative closeness results
+                c = sneg / (spos + sneg)
 
-            # ranking the models
-            ranked = {}
-            rankArr = [0 for _ in range(n)] # CHANGED HERE 
-            initialRank = 1
+                # ranking the models
+                ranked = {}
+                rankArr = [0 for _ in range(n)] # CHANGED HERE 
+                initialRank = 1
 
-            for _ in range(n):
-                # populating rank list
-                index = np.argmin(c)
-                ranked[index] = initialRank
-                # discarding the considered index
-                c[index] = np.inf
-                initialRank += 1
+                for _ in range(n):
+                    # populating rank list
+                    index = np.argmin(c)
+                    ranked[index] = initialRank
+                    # discarding the considered index
+                    c[index] = np.inf
+                    initialRank += 1
 
-            for i in range(n):
-                rankArr[i] = ranked[i]
+                for i in range(n):
+                    rankArr[i] = ranked[i]
 
-            rankArr = [[i] for i in rankArr] # CHANGED HERE
-            # CALCULATED THE RANKS -----------------------------------------------
+                rankArr = [[i] for i in rankArr] # CHANGED HERE
+                # CALCULATED THE RANKS -----------------------------------------------
 
-            modelsWithRank = []
-            # criteriasWithRank = np.append(cdata, rankArr, 1)
+                modelsWithRank = []
+                # criteriasWithRank = np.append(cdata, rankArr, 1)
 
-            for i in range(len(rankArr)):
-                row = [data[i][0], rankArr[i][0]]
-                modelsWithRank.append(row)
+                for i in range(len(rankArr)):
+                    row = [data[i][0], rankArr[i][0]]
+                    modelsWithRank.append(row)
 
-            print(modelsWithRank)
-            #-----------------------------------------------------------
-            # ADDING TO TABLE
-            columns = ('models', 'rank')
-            columnsText = ('Models', 'Rank')
-            tree = Treeview(rootRank, columns=columns, show='headings')
+                print(modelsWithRank)
+                #-----------------------------------------------------------
+                # ADDING TO TABLE
+                columns = ('models', 'rank')
+                columnsText = ('Models', 'Rank')
+                tree = Treeview(rootRank, columns=columns, show='headings')
 
-            for i in range(len(columns)):
-                tree.heading(columns[i], text=columnsText[i])
-                tree.column(columns[i])
-            
+                for i in range(len(columns)):
+                    tree.heading(columns[i], text=columnsText[i])
+                    tree.column(columns[i])
+                
 
-            for i in modelsWithRank:
-                # ADDING TO THE TREE VIEW
-                tree.insert('', END, values=tuple(i))
+                for i in modelsWithRank:
+                    # ADDING TO THE TREE VIEW
+                    tree.insert('', END, values=tuple(i))
 
-            tree.grid(row=0, column=0)
-            rootRank.mainloop()
+                tree.grid(row=0, column=0)
+                rootRank.mainloop()
         else:
             showinfo(title="Technique Missing", message="Please select a technique to rank the models")
 
@@ -291,8 +294,8 @@ def computeC(path):
         if param:
             data.append([model, param]) # THE FIRST ARG ---> STRING, SECOND ARG ---> PARAMETERS
 
-    if len(data) <= 1:
-        showerror(title='Cannot run TOPSIS', message="None or less models have been selected, TOPSIS requires atleast 2 models.")
+    if len(data) < 1:
+        showerror(title='No models selected', message="None or less models have been selected, select atleast 1 model to view the criterias.")
     else:
         # GETTING THE DATA FROM DATASET IN ORDER TO CALCULATE PERFORMANCE CRITERIA
         dataset = pd.read_csv(path)
@@ -473,6 +476,7 @@ def compute(path):
                 
             def _removeModel():
                 try:
+                    mseMap[modelObject.name] = np.inf
                     modelMap[modelObject.name] = None
                     # CHANGING BUTTON COLOR
                     style.configure('GO.TButton', background='red')
@@ -530,6 +534,7 @@ def compute(path):
             
             def _removeModel():
                 try:
+                    mseMap[modelObject.name] = np.inf
                     modelMap[modelObject.name] = None
                     # CHANGING BUTTON COLOR
                     style.configure('Delayed.TButton', background='red')
@@ -590,6 +595,7 @@ def compute(path):
             
             def _removeModel():
                 try:
+                    mseMap[modelObject.name] = np.inf
                     modelMap[modelObject.name] = None
                     # CHANGING BUTTON COLOR
                     style.configure('Inflection.TButton', background='red')
@@ -655,6 +661,7 @@ def compute(path):
             
             def _removeModel():
                 try:
+                    mseMap[modelObject.name] = np.inf
                     modelMap[modelObject.name] = None
                     # CHANGING BUTTON COLOR
                     style.configure('YamadaRay.TButton', background='red')
@@ -723,6 +730,7 @@ def compute(path):
             
             def _removeModel():
                 try:
+                    mseMap[modelObject.name] = np.inf
                     modelMap[modelObject.name] = None
                     # CHANGING BUTTON COLOR
                     style.configure('YamadaIm1.TButton', background='red')
@@ -788,6 +796,7 @@ def compute(path):
             
             def _removeModel():
                 try:
+                    mseMap[modelObject.name] = np.inf
                     modelMap[modelObject.name] = None
                     # CHANGING BUTTON COLOR
                     style.configure('YamadaIm2.TButton', background='red')
@@ -853,6 +862,7 @@ def compute(path):
             
             def _removeModel():
                 try:
+                    mseMap[modelObject.name] = np.inf
                     modelMap[modelObject.name] = None
                     # CHANGING BUTTON COLOR
                     style.configure('YamadaExpo.TButton', background='red')
@@ -923,6 +933,7 @@ def compute(path):
             
             def _removeModel():
                 try:
+                    mseMap[modelObject.name] = np.inf
                     modelMap[modelObject.name] = None
                     # CHANGING BUTTON COLOR
                     style.configure('Vtub.TButton', background='red')
@@ -996,6 +1007,7 @@ def compute(path):
             
             def _removeModel():
                 try:
+                    mseMap[modelObject.name] = np.inf
                     modelMap[modelObject.name] = None
                     # CHANGING BUTTON COLOR
                     style.configure('RMD.TButton', background='red')
@@ -1066,6 +1078,7 @@ def compute(path):
             
             def _removeModel():
                 try:
+                    mseMap[modelObject.name] = np.inf
                     modelMap[modelObject.name] = None
                     # CHANGING BUTTON COLOR
                     style.configure('Changs.TButton', background='red')
@@ -1178,4 +1191,5 @@ def main():
 
     root.mainloop()
 
-main()
+if __name__ == '__main__':
+    main()
