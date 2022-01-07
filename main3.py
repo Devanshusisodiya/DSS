@@ -1166,25 +1166,25 @@ def main():
     global loaded
 
     root = Tk()
-    root.title("Reliability DSS")
-    root.geometry("500x250")
+    root.title("SRGM DSS")
+    root.geometry("750x250")
 
     path = StringVar()
     loaded = BooleanVar(False)
-    # loaded.set(False)
 
-    rootCanvas = Canvas(root, width=500, height=250)
+    rootCanvas = Canvas(root, width=750, height=250)
     rootCanvas.pack()
 
-    modelButton = Button(rootCanvas, text='Models & Computation', command=lambda: compute(pathEntry.get())) # SUBSTITUTE WITH THE models OVER HERE
-    
-    pathEntry = Entry(rootCanvas, width=35)
+    modelButton = Button(rootCanvas, text='Models & Computation', command=lambda: compute(pathEntry.get()))
+    pathEntryLabel = Label(rootCanvas, text="Enter path of dataset")
+    pathEntry = Entry(rootCanvas, width=22)
     loadButton = Button(rootCanvas, text='Load Dataset', command=lambda: loadData(pathEntry.get(), path, loaded))
     viewButton = Button(rootCanvas, text='View Dataset', command=lambda: viewData(pathEntry.get()))
     closeButton = Button(rootCanvas, text='Close', command=root.destroy)
-    # PLACING THE BUTTONS  
+    # PLACING THE BUTTONS AND LABEL
     modelButton.place(relx=0.10, rely=0.35, relwidth=0.35, relheight=0.2)
-    pathEntry.place(relx=0.50, rely=0.15)
+    pathEntryLabel.place(relx=0.55, rely=0.15)
+    pathEntry.place(relx=0.72, rely=0.15)
     loadButton.place(relx=0.55, rely=0.25, relwidth=0.35, relheight=0.2)
     viewButton.place(relx=0.55, rely=0.45, relwidth=0.35, relheight=0.2)
     closeButton.place(relx=0.35, rely=0.75, relwidth=0.25, relheight=0.15)
