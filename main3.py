@@ -28,14 +28,18 @@ def viewData(path):
         rootView.title('Dataset')
         rootView.geometry('620x250')
         rootView.resizable(False, False)
+        
+        tree = Treeview(rootView, show='headings')
 
         # define columns
-        columns = ('month', 'faults', 'cdf')
-        tree = Treeview(rootView, columns=columns, show='headings')
+        tree['columns'] = ('month', 'faults', 'cdf')
+        tree.column('month', anchor=CENTER)
+        tree.column('faults', anchor=CENTER)
+        tree.column('cdf', anchor=CENTER)
         # define headings
-        tree.heading('month', text='Month')
-        tree.heading('faults', text='Faults')
-        tree.heading('cdf', text='Cummulative Faults')
+        tree.heading('month', text='Month', anchor=CENTER)
+        tree.heading('faults', text='Faults', anchor=CENTER)
+        tree.heading('cdf', text='Cummulative Faults', anchor=CENTER)
         # add data to the treeview
         for i in range(len(data)):
             tree.insert('', END, values=tuple(data.loc[i]))
@@ -108,7 +112,6 @@ def computeR(path):
             # WITH MODEL ALONG WITH THE ESTIMATED PARAMETERS
             for model in modelMap:
                 param = modelMap[model]
-                print(model, "--->", param)
                 if param:
                     data.append([model, param]) # THE FIRST ARG ---> STRING, SECOND ARG ---> PARAMETERS
 
@@ -167,6 +170,7 @@ def computeR(path):
                     cdata.append(modelData[1:])
                 cdata = np.array(cdata)
 
+
                 n = cdata.shape[0] # number of models
                 m = cdata.shape[1] # number of criterias
 
@@ -186,32 +190,39 @@ def computeR(path):
                 # CALCULATING THE RANK -------------------------------------------------------
                 y = cdata / np.sqrt(np.sum(cdata**2, axis=0))
                 v = w * y
+                print(v, end='\n\n')
 
                 vpos = []
                 vneg = []
 
                 criteria_map = {
-                    'mse': v[:, 0],
-                    'mae': v[:, 1],
-                    'r2': v[:, 2],
-                    'adjr2': v[:, 3],
-                    'aic': v[: 4],
-                    'pp': v[:, 5],
-                    'meop': v[:, 6],
-                    'theil': v[: 7]
                 }
+
+                stringCriterias = ['mse', 'mae', 'r2', 'adjr2','aic', 'pp', 'meop', 'theil',]
+                for i in range(8):
+                    cr = stringCriterias[i]
+                    criteria_map[cr] = v[:, i]
+
+                for i in criteria_map:
+                    print(i, criteria_map[i])
+
                 maximizer = ['r2', 'adjr2']
                 minimizer = ['mse', 'mae', 'pp', 'meop', 'aic', 'theil']
+
+            
+                print()
 
                 for criteria in criteria_map:
                     if criteria in maximizer:
                         best = np.amax(criteria_map[criteria])
                         worst = np.amin(criteria_map[criteria])
+                        
                         vpos.append(best)
                         vneg.append(worst)
                     if criteria in minimizer:
                         best = np.amin(criteria_map[criteria])
                         worst = np.amax(criteria_map[criteria])
+                        
                         vpos.append(best)
                         vneg.append(worst)
 
@@ -219,11 +230,21 @@ def computeR(path):
                 vpos = np.array(vpos)
                 vneg = np.array(vneg)
 
+                print(vpos)
+                print(vneg, end='\n\n')
+
                 spos = np.sqrt(np.sum( (v-vpos)**2 , axis=1))
                 sneg = np.sqrt(np.sum( (v-vneg)**2 , axis=1))
 
+                print(spos)
+                print(sneg)
+                print()
+
                 # final relative closeness results
                 c = sneg / (spos + sneg)
+
+                print(c)
+                print()
 
                 # ranking the models
                 ranked = {}
@@ -290,7 +311,6 @@ def computeC(path):
     # WITH MODEL ALONG WITH THE ESTIMATED PARAMETERS
     for model in modelMap:
         param = modelMap[model]
-        print(model, "--->", param)
         if param:
             data.append([model, param]) # THE FIRST ARG ---> STRING, SECOND ARG ---> PARAMETERS
 
@@ -415,9 +435,9 @@ def compute(path):
             'Yamada Imperfect 1': ['a', 'b', '\u03B1'],                # a, b, alpha
             'Yamada Imperfect 2': ['a', 'b', '\u03B1'],                # a, b, alpha
             'Yamada Exponential': ['a', '\u03B1', '\u03B2', '\u03B3'], # a, alpha, beta, gamma
-            'Vtub Shaped': ['a', 'b', '\u03B1', '\u03B2', 'n'],        # a, b, alpha, beta, n 
+            'Vtub Shaped': ['a', 'b', '\u03B1', '\u03B2', 'N'],        # a, b, alpha, beta, N 
             'RMD': ['a', 'b', '\u03B1', '\u03B2'],                     # a, b, alpha, beta 
-            'Chang et al\'s':['a', 'b', '\u03B1', '\u03B2', 'n']       # a, b, alpha, beta, n
+            'Chang et al\'s':['a', 'b', '\u03B1', '\u03B2', 'N']       # a, b, alpha, beta, N
         }
 
         rootComp = Toplevel(root)
@@ -466,7 +486,6 @@ def compute(path):
                     rootPar.destroy()
                     showinfo(title="MSE increased", message="MSE has increased over the given model parameters")
                 
-                print(mse < mseMap[modelObject.name])
 
                 # CHANGING BUTTON COLOR
                 style.configure('GO.TButton', background='green')
@@ -525,7 +544,7 @@ def compute(path):
                     rootPar.destroy()
                     showinfo(title="MSE increased", message="MSE has increased over the given model parameters")
                 
-                print(mse < mseMap[modelObject.name])
+                # print(mse < mseMap[modelObject.name])
 
                 # CHANGING BUTTON COLOR
                 style.configure('Delayed.TButton', background='green')
@@ -586,7 +605,7 @@ def compute(path):
                     rootPar.destroy()
                     showinfo(title="MSE increased", message="MSE has increased over the given model parameters")
                 
-                print(mse < mseMap[modelObject.name])
+                # print(mse < mseMap[modelObject.name])
 
                 # CHANGING BUTTON COLOR
                 style.configure('Inflection.TButton', background='green')
@@ -652,7 +671,7 @@ def compute(path):
                     rootPar.destroy()
                     showinfo(title="MSE increased", message="MSE has increased over the given model parameters")
                 
-                print(mse < mseMap[modelObject.name])
+                # print(mse < mseMap[modelObject.name])
 
                 # CHANGING BUTTON COLOR
                 style.configure('YamadaRay.TButton', background='green')
@@ -721,7 +740,7 @@ def compute(path):
                     rootPar.destroy()
                     showinfo(title="MSE increased", message="MSE has increased over the given model parameters")
                 
-                print(mse < mseMap[modelObject.name])
+                # print(mse < mseMap[modelObject.name])
 
                 # CHANGING BUTTON COLOR
                 style.configure('YamadaIm1.TButton', background='green')
@@ -787,7 +806,7 @@ def compute(path):
                     rootPar.destroy()
                     showinfo(title="MSE increased", message="MSE has increased over the given model parameters")
                 
-                print(mse < mseMap[modelObject.name])
+                # print(mse < mseMap[modelObject.name])
 
                 # CHANGING BUTTON COLOR
                 style.configure('YamadaIm2.TButton', background='green')
@@ -853,7 +872,7 @@ def compute(path):
                     rootPar.destroy()
                     showinfo(title="MSE increased", message="MSE has increased over the given model parameters")
                 
-                print(mse < mseMap[modelObject.name])
+                # print(mse < mseMap[modelObject.name])
 
                 # CHANGING BUTTON COLOR
                 style.configure('YamadaExpo.TButton', background='green')
@@ -924,7 +943,7 @@ def compute(path):
                     rootPar.destroy()
                     showinfo(title="MSE increased", message="MSE has increased over the given model parameters")
                 
-                print(mse < mseMap[modelObject.name])
+                # print(mse < mseMap[modelObject.name])
 
                 # CHANGING BUTTON COLOR
                 style.configure('Vtub.TButton', background='green')
@@ -998,7 +1017,7 @@ def compute(path):
                     rootPar.destroy()
                     showinfo(title="MSE increased", message="MSE has increased over the given model parameters")
                 
-                print(mse < mseMap[modelObject.name])
+                # print(mse < mseMap[modelObject.name])
 
                 # CHANGING BUTTON COLOR
                 style.configure('RMD.TButton', background='green')
@@ -1069,7 +1088,7 @@ def compute(path):
                     rootPar.destroy()
                     showinfo(title="MSE increased", message="MSE has increased over the given model parameters")
                 
-                print(mse < mseMap[modelObject.name])
+                # print(mse < mseMap[modelObject.name])
 
                 # CHANGING BUTTON COLOR
                 style.configure('Changs.TButton', background='green')
@@ -1132,7 +1151,7 @@ def compute(path):
         model10 = Button(canvas, text="Chang et al\'s", style='Changs.TButton', command=lambda: changParamEst(changs))
 
         # COMPUTATION BUTTONS
-        computationLabel = Label(canvas, text="Calculation of Criterias & Rank")
+        computationLabel = Label(canvas, text="Calculation of Model Parameters & Criterias")
         displayParameters = Button(canvas, text="Estimated Model Parameters", command=lambda: display())
         calculateCriteria = Button(canvas, text="Calculate Criterias", command=lambda: computeC(path))
 
@@ -1150,7 +1169,7 @@ def compute(path):
         model10.place(relx= 0.1, rely=0.8, relwidth=0.35, relheight=0.08)
 
         # ADDING COMPUTATION BUTTONS
-        computationLabel.place(relx= 0.625, rely=0.2)
+        computationLabel.place(relx= 0.575, rely=0.2)
         displayParameters.place(relx= 0.55, rely=0.3, relwidth=0.35, relheight=0.1)
         calculateCriteria.place(relx= 0.55, rely=0.4, relwidth=0.35, relheight=0.1)
 
@@ -1193,3 +1212,5 @@ def main():
 
 if __name__ == '__main__':
     main()
+
+    
