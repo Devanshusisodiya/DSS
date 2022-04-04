@@ -2,7 +2,8 @@ import numpy as np
  
 # ALL MODEL CLASSES
 class GO:
-    name = 'GO'
+    name = 'GO model'
+    estAgain = False
     def model(self, a, b, t):
         '''Definition of GO Model'''
         return a*(1-np.exp(-b*t))
@@ -73,10 +74,11 @@ class GO:
         residuals = np.square(self.model(params[0], params[1], X) - Y)
         numero = np.sqrt(np.sum(residuals))
         denom = np.sqrt(np.sum(np.square(Y)))
-        return  numero/denom
+        return  (numero/denom)*100
 
 class DelayedS:
-    name = 'Delayed S Shaped'
+    name = 'Delayed-S Shaped model'
+    estAgain = False
     def model(self, a, b, t):
         '''Definition of Delayed S Shaped Model'''
         return a*(1-(1+b*t)*np.exp(-b*t))
@@ -150,10 +152,11 @@ class DelayedS:
         residuals = np.square(self.model(params[0], params[1], X) - Y)
         numero = np.sqrt(np.sum(residuals))
         denom = np.sqrt(np.sum(np.square(Y)))
-        return  numero/denom
+        return  (numero/denom)*100
 
 class InflectionS:
-    name = 'Inflection S Shaped'
+    name = 'Inflection-S Shaped model'
+    estAgain = False
     def model(self, a, b, beta, t):
         '''Definition of Inflection S Shaped Model'''
         return a*(1-np.exp(-b*t))/(1+beta*np.exp(-b*t))
@@ -227,10 +230,11 @@ class InflectionS:
         residuals = np.square(self.model(params[0], params[1], params[2], X) - Y)
         numero = np.sqrt(np.sum(residuals))
         denom = np.sqrt(np.sum(np.square(Y)))
-        return  numero/denom
+        return  (numero/denom)*100
 
 class YamadaRayleigh:
-    name = 'Yamada Rayleigh'
+    name = 'Yamada Rayleigh model'
+    estAgain = False
     def model(self, a, alp, beta, gam, t):
         '''Definition of Yamada Rayleigh Model'''
         return a*(1-np.exp(-gam*alp*(1-np.exp(-beta*t**2/2))))
@@ -304,10 +308,11 @@ class YamadaRayleigh:
         residuals = np.square(self.model(params[0], params[1], params[2], params[3], X) - Y)
         numero = np.sqrt(np.sum(residuals))
         denom = np.sqrt(np.sum(np.square(Y)))
-        return  numero/denom
+        return  (numero/denom)*100
 
 class YamadaImperfect1:
-    name = 'Yamada Imperfect 1'
+    name = 'Yamada Imperfect 1 model'
+    estAgain = False
     def model(self, a, b, alp, t):
         '''Definition of Yamada Imperfect 1 Model'''
         return (a*b/(alp+b))*(np.exp(alp*t)-np.exp(-b*t))
@@ -381,10 +386,11 @@ class YamadaImperfect1:
         residuals = np.square(self.model(params[0], params[1], params[2], X) - Y)
         numero = np.sqrt(np.sum(residuals))
         denom = np.sqrt(np.sum(np.square(Y)))
-        return  numero/denom
+        return  (numero/denom)*100
 
 class YamadaImperfect2:
-    name = 'Yamada Imperfect 2'
+    name = 'Yamada Imperfect 2 model'
+    estAgain = False
     def model(self, a, b, alp, t):
         '''Definition of Yamada Imperfect 2 Model'''
         return a*(1-np.exp(-b*t))*(1-alp/b) + a*alp*t
@@ -458,10 +464,11 @@ class YamadaImperfect2:
         residuals = np.square(self.model(params[0], params[1], params[2], X) - Y)
         numero = np.sqrt(np.sum(residuals))
         denom = np.sqrt(np.sum(np.square(Y)))
-        return  numero/denom
+        return  (numero/denom)*100
 
 class YamadaExponential:
-    name = 'Yamada Exponential'
+    name = 'Yamada Exponential model'
+    estAgain = False
     def model(self, a, alp, beta, gam, t):
         '''Definition of Yamada Exponential Model'''
         return a*(1-np.exp(-gam*alp*(1-np.exp(-beta*t))))
@@ -535,10 +542,11 @@ class YamadaExponential:
         residuals = np.square(self.model(params[0], params[1], params[2], params[3], X) - Y)
         numero = np.sqrt(np.sum(residuals))
         denom = np.sqrt(np.sum(np.square(Y)))
-        return  numero/denom
+        return  (numero/denom)*100
 
 class Vtub:
-    name = 'Vtub Shaped'
+    name = 'Vtub Shaped model'
+    estAgain = False
     def model(self, a, b, alp, beta, n, t):
         '''Definition of Vtub Shaped Model'''
         return n*(1-(beta/(beta + a**(t**b) - 1))**alp)
@@ -612,10 +620,11 @@ class Vtub:
         residuals = np.square(self.model(params[0], params[1], params[2], params[3], params[4], X) - Y)
         numero = np.sqrt(np.sum(residuals))
         denom = np.sqrt(np.sum(np.square(Y)))
-        return  numero/denom
+        return  (numero/denom)*100
 
 class RMD:
-    name = 'RMD'
+    name = 'RMD model'
+    estAgain = False
     def model(self, a, b, alp, beta, t):
         '''Definition of RMD Model'''
         return a*alp*(1-np.exp(-b*t)) - (a*b/(b-beta))*(np.exp(-beta*t) - np.exp(-b*t))
@@ -689,10 +698,11 @@ class RMD:
         residuals = np.square(self.model(params[0], params[1], params[2], params[3], X) - Y)
         numero = np.sqrt(np.sum(residuals))
         denom = np.sqrt(np.sum(np.square(Y)))
-        return  numero/denom
+        return  (numero/denom)*100
 
 class Changs:
-    name = 'Chang et al\'s'
+    name = 'Chang et al\'s model'
+    estAgain = False
     def model(self, a, b, alp, beta, n, t):
         '''Definition of Chang et al's Model'''
         return n*(1-(beta/(beta + (a*t)**b))**alp)
@@ -766,7 +776,7 @@ class Changs:
         residuals = np.square(self.model(params[0], params[1], params[2], params[3], params[4], X) - Y)
         numero = np.sqrt(np.sum(residuals))
         denom = np.sqrt(np.sum(np.square(Y)))
-        return  numero/denom
+        return  (numero/denom)*100
 
 # OBJECTS TO WORK WITH
 gomodel = GO()

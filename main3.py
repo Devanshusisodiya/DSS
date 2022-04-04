@@ -243,7 +243,7 @@ def computeR(path):
                 # final relative closeness results
                 c = sneg / (spos + sneg)
 
-                print(c)
+                # print(c)
                 print()
 
                 # ranking the models
@@ -253,10 +253,10 @@ def computeR(path):
 
                 for _ in range(n):
                     # populating rank list
-                    index = np.argmin(c)
+                    index = np.argmax(c)
                     ranked[index] = initialRank
                     # discarding the considered index
-                    c[index] = np.inf
+                    c[index] = -1
                     initialRank += 1
 
                 for i in range(n):
@@ -272,7 +272,10 @@ def computeR(path):
                     row = [data[i][0], rankArr[i][0]]
                     modelsWithRank.append(row)
 
+
+                
                 print(modelsWithRank)
+                print(w)
                 #-----------------------------------------------------------
                 # ADDING TO TABLE
                 columns = ('models', 'rank')
@@ -384,7 +387,7 @@ def computeC(path):
         tree.place(relx=0, rely=0)
 
         # RANK BUTTON
-        rankButton = Button(rootCriteria, text="Rank of Models", command=lambda: computeR(path))
+        rankButton = Button(rootCriteria, text="Click to calculate rank of models", command=lambda: computeR(path))
         rankButton.place(relx=0.375, rely=0.775, relwidth=0.25, relheight=0.2)
         rootCriteria.mainloop()
 
@@ -402,42 +405,42 @@ def compute(path):
         global paramMap
         global mseMap
         modelMap = {
-            'GO': None,
-            'Delayed S Shaped': None,
-            'Inflection S Shaped': None,
-            'Yamada Rayleigh': None,
-            'Yamada Imperfect 1': None,
-            'Yamada Imperfect 2': None,
-            'Yamada Exponential': None,
-            'Vtub Shaped': None,
-            'RMD': None,
-            'Chang et al\'s': None
+            'GO model': None,
+            'Delayed-S Shaped model': None,
+            'Inflection-S Shaped model': None,
+            'Yamada Rayleigh model': None,
+            'Yamada Imperfect 1 model': None,
+            'Vtub Shaped model': None,
+            'Yamada Imperfect 2 model': None,
+            'RMD model`': None,
+            'Yamada Exponential model': None,
+            'Chang et al\'s model': None
         }
 
         mseMap = {
-            'GO': np.inf,
-            'Delayed S Shaped': np.inf,
-            'Inflection S Shaped': np.inf,
-            'Yamada Rayleigh': np.inf,
-            'Yamada Imperfect 1': np.inf,
-            'Yamada Imperfect 2': np.inf,
-            'Yamada Exponential': np.inf,
-            'Vtub Shaped': np.inf,
-            'RMD': np.inf,
-            'Chang et al\'s': np.inf
+            'GO model': np.inf,
+            'Delayed-S Shaped model': np.inf,
+            'Inflection-S Shaped model': np.inf,
+            'Yamada Rayleigh model': np.inf,
+            'Yamada Imperfect 1 model': np.inf,
+            'Yamada Imperfect 2 model': np.inf,
+            'Yamada Exponential model': np.inf,
+            'Vtub Shaped model': np.inf,
+            'RMD model': np.inf,
+            'Chang et al\'s model': np.inf
         }
 
         paramMap = {
-            'GO': ['a', 'b'],                                          # a, b
-            'Delayed S Shaped': ['a', 'b'],                            # a, b
-            'Inflection S Shaped': ['a', 'b', '\u03B2'],               # a, b, beta
-            'Yamada Rayleigh': ['a', '\u03B1', '\u03B2', '\u03B3'],    # a, alpha, beta, gamma
-            'Yamada Imperfect 1': ['a', 'b', '\u03B1'],                # a, b, alpha
-            'Yamada Imperfect 2': ['a', 'b', '\u03B1'],                # a, b, alpha
-            'Yamada Exponential': ['a', '\u03B1', '\u03B2', '\u03B3'], # a, alpha, beta, gamma
-            'Vtub Shaped': ['a', 'b', '\u03B1', '\u03B2', 'N'],        # a, b, alpha, beta, N 
-            'RMD': ['a', 'b', '\u03B1', '\u03B2'],                     # a, b, alpha, beta 
-            'Chang et al\'s':['a', 'b', '\u03B1', '\u03B2', 'N']       # a, b, alpha, beta, N
+            'GO model': ['a', 'b'],                                          # a, b
+            'Delayed-S Shaped model': ['a', 'b'],                            # a, b
+            'Inflection-S Shaped model': ['a', 'b', '\u03B2'],               # a, b, beta
+            'Yamada Rayleigh model': ['a', '\u03B1', '\u03B2', '\u03B3'],    # a, alpha, beta, gamma
+            'Yamada Imperfect 1 model': ['a', 'b', '\u03B1'],                # a, b, alpha
+            'Yamada Imperfect 2 model': ['a', 'b', '\u03B1'],                # a, b, alpha
+            'Yamada Exponential model': ['a', '\u03B1', '\u03B2', '\u03B3'], # a, alpha, beta, gamma
+            'Vtub Shaped model': ['a', 'b', '\u03B1', '\u03B2', 'N'],        # a, b, alpha, beta, N 
+            'RMD model': ['a', 'b', '\u03B1', '\u03B2'],                     # a, b, alpha, beta 
+            'Chang et al\'s model':['a', 'b', '\u03B1', '\u03B2', 'N']       # a, b, alpha, beta, N
         }
 
         rootComp = Toplevel(root)
@@ -478,25 +481,55 @@ def compute(path):
                 minimizationResults = minimize(fun=modelObject.OLS, x0=arrToOptimize, args=(X, Y), method='Nelder-Mead')
                 estimatesdParams = list(minimizationResults.x)
                 mse = np.round_(modelObject.mse(estimatesdParams, X, Y), decimals=4)
-                # CHECKING WETHER CALCULATED MSE IS SMALLER THAN THE STORED MSE/ PREVIOUS MSE
-                if(mse < mseMap[modelObject.name]):
+                # CHECKING WETHER CALCULATED MSE IS SMALLER THAN THE STORED MSE PREVIOUS MSE
+                if modelObject.estAgain:
+
+                    paramStringNew = ''
+                    paramStringOld = ''
+                    oldParams = modelMap[modelObject.name]
+                    subParamMap = paramMap[modelObject.name]
+                    numParams = len(arrToOptimize)
+                    
+                    for i in range(numParams):
+                        parNew = subParamMap[i] + "=" + "{:.4e}".format(estimatesdParams[i]) + ", "
+                        parOld = subParamMap[i] + "=" + "{:.4e}".format(oldParams[i]) + ", "
+                        paramStringNew += parNew
+                        paramStringOld += parOld
+                    
+                    res = askyesno(
+                        title='MSE changed',
+                        message='Old parameters are {}, new parameters are {}. Previous MSE is {}, new MSE is {}. Do you want to continue?'.format(
+                            paramStringOld[:-2],
+                            paramStringNew[:-2],
+                            mseMap[modelObject.name],
+                            mse
+                        )
+                    )
+
+                    if res == True:
+                        mseMap[modelObject.name] = mse
+                        modelMap[modelObject.name] = list(minimizationResults.x)
+                        rootPar.destroy()
+                    if res == False:
+                        rootPar.destroy()
+                else:
+                    
                     mseMap[modelObject.name] = mse
                     modelMap[modelObject.name] = list(minimizationResults.x)
-                else:
+                    modelObject.estAgain = True
                     rootPar.destroy()
-                    showinfo(title="MSE increased", message="MSE has increased over the given model parameters")
                 
-
-                # CHANGING BUTTON COLOR
-                style.configure('GO.TButton', background='green')
-                #
-                rootPar.destroy()
+                    # CHANGING BUTTON COLOR
+                    style.configure('GO.TButton', background='green')
+                    #
+                    rootPar.destroy()
                 
                 
             def _removeModel():
                 try:
                     mseMap[modelObject.name] = np.inf
                     modelMap[modelObject.name] = None
+                    modelObject.estAgain = False
                     # CHANGING BUTTON COLOR
                     style.configure('GO.TButton', background='red')
                     #
@@ -521,7 +554,7 @@ def compute(path):
             removeModel.place(relx=0.3, rely=0.7, relwidth=0.35, relheight=0.2)
 
             rootPar.mainloop()
-
+ 
         # THIS IS FOR MODEL 2 ---> DELAYED S
         def delayedSParamEst(modelObject):
             rootPar = Toplevel(rootComp)
@@ -537,14 +570,42 @@ def compute(path):
                 estimatesdParams = list(minimizationResults.x)
                 mse = np.round_(modelObject.mse(estimatesdParams, X, Y), decimals=4)
                 # CHECKING WETHER CALCULATED MSE IS SMALLER THAN THE STORED MSE/ PREVIOUS MSE
-                if(mse < mseMap[modelObject.name]):
+                if modelObject.estAgain:
+
+                    paramStringNew = ''
+                    paramStringOld = ''
+                    oldParams = modelMap[modelObject.name]
+                    subParamMap = paramMap[modelObject.name]
+                    numParams = len(arrToOptimize)
+                    
+                    for i in range(numParams):
+                        parNew = subParamMap[i] + "=" + "{:.4e}".format(estimatesdParams[i]) + ", "
+                        parOld = subParamMap[i] + "=" + "{:.4e}".format(oldParams[i]) + ", "
+                        paramStringNew += parNew
+                        paramStringOld += parOld
+                    
+                    res = askyesno(
+                        title='MSE changed',
+                        message='Old parameters are {}, new parameters are {}. Previous MSE is {}, new MSE is {}. Do you want to continue?'.format(
+                            paramStringOld[:-2],
+                            paramStringNew[:-2],
+                            mseMap[modelObject.name],
+                            mse
+                        )
+                    )
+
+                    if res == True:
+                        mseMap[modelObject.name] = mse
+                        modelMap[modelObject.name] = list(minimizationResults.x)
+                        rootPar.destroy()
+                    if res == False:
+                        rootPar.destroy()
+                else:
+                    
                     mseMap[modelObject.name] = mse
                     modelMap[modelObject.name] = list(minimizationResults.x)
-                else:
+                    modelObject.estAgain = True
                     rootPar.destroy()
-                    showinfo(title="MSE increased", message="MSE has increased over the given model parameters")
-                
-                # print(mse < mseMap[modelObject.name])
 
                 # CHANGING BUTTON COLOR
                 style.configure('Delayed.TButton', background='green')
@@ -555,6 +616,7 @@ def compute(path):
                 try:
                     mseMap[modelObject.name] = np.inf
                     modelMap[modelObject.name] = None
+                    modelObject.estAgain = False
                     # CHANGING BUTTON COLOR
                     style.configure('Delayed.TButton', background='red')
                     #
@@ -598,14 +660,42 @@ def compute(path):
                 estimatesdParams = list(minimizationResults.x)
                 mse = np.round_(modelObject.mse(estimatesdParams, X, Y), decimals=4)
                 # CHECKING WETHER CALCULATED MSE IS SMALLER THAN THE STORED MSE/ PREVIOUS MSE
-                if(mse < mseMap[modelObject.name]):
+                if modelObject.estAgain:
+
+                    paramStringNew = ''
+                    paramStringOld = ''
+                    oldParams = modelMap[modelObject.name]
+                    subParamMap = paramMap[modelObject.name]
+                    numParams = len(arrToOptimize)
+                    
+                    for i in range(numParams):
+                        parNew = subParamMap[i] + "=" + "{:.4e}".format(estimatesdParams[i]) + ", "
+                        parOld = subParamMap[i] + "=" + "{:.4e}".format(oldParams[i]) + ", "
+                        paramStringNew += parNew
+                        paramStringOld += parOld
+                    
+                    res = askyesno(
+                        title='MSE changed',
+                        message='Old parameters are {}, new parameters are {}. Previous MSE is {}, new MSE is {}. Do you want to continue?'.format(
+                            paramStringOld[:-2],
+                            paramStringNew[:-2],
+                            mseMap[modelObject.name],
+                            mse
+                        )
+                    )
+
+                    if res == True:
+                        mseMap[modelObject.name] = mse
+                        modelMap[modelObject.name] = list(minimizationResults.x)
+                        rootPar.destroy()
+                    if res == False:
+                        rootPar.destroy()
+                else:
+                    
                     mseMap[modelObject.name] = mse
                     modelMap[modelObject.name] = list(minimizationResults.x)
-                else:
+                    modelObject.estAgain = True
                     rootPar.destroy()
-                    showinfo(title="MSE increased", message="MSE has increased over the given model parameters")
-                
-                # print(mse < mseMap[modelObject.name])
 
                 # CHANGING BUTTON COLOR
                 style.configure('Inflection.TButton', background='green')
@@ -664,14 +754,42 @@ def compute(path):
                 estimatesdParams = list(minimizationResults.x)
                 mse = np.round_(modelObject.mse(estimatesdParams, X, Y), decimals=4)
                 # CHECKING WETHER CALCULATED MSE IS SMALLER THAN THE STORED MSE/ PREVIOUS MSE
-                if(mse < mseMap[modelObject.name]):
+                if modelObject.estAgain:
+
+                    paramStringNew = ''
+                    paramStringOld = ''
+                    oldParams = modelMap[modelObject.name]
+                    subParamMap = paramMap[modelObject.name]
+                    numParams = len(arrToOptimize)
+                    
+                    for i in range(numParams):
+                        parNew = subParamMap[i] + "=" + "{:.4e}".format(estimatesdParams[i]) + ", "
+                        parOld = subParamMap[i] + "=" + "{:.4e}".format(oldParams[i]) + ", "
+                        paramStringNew += parNew
+                        paramStringOld += parOld
+                    
+                    res = askyesno(
+                        title='MSE changed',
+                        message='Old parameters are {}, new parameters are {}. Previous MSE is {}, new MSE is {}. Do you want to continue?'.format(
+                            paramStringOld[:-2],
+                            paramStringNew[:-2],
+                            mseMap[modelObject.name],
+                            mse
+                        )
+                    )
+
+                    if res == True:
+                        mseMap[modelObject.name] = mse
+                        modelMap[modelObject.name] = list(minimizationResults.x)
+                        rootPar.destroy()
+                    if res == False:
+                        rootPar.destroy()
+                else:
+                    
                     mseMap[modelObject.name] = mse
                     modelMap[modelObject.name] = list(minimizationResults.x)
-                else:
+                    modelObject.estAgain = True
                     rootPar.destroy()
-                    showinfo(title="MSE increased", message="MSE has increased over the given model parameters")
-                
-                # print(mse < mseMap[modelObject.name])
 
                 # CHANGING BUTTON COLOR
                 style.configure('YamadaRay.TButton', background='green')
@@ -733,14 +851,42 @@ def compute(path):
                 estimatesdParams = list(minimizationResults.x)
                 mse = np.round_(modelObject.mse(estimatesdParams, X, Y), decimals=4)
                 # CHECKING WETHER CALCULATED MSE IS SMALLER THAN THE STORED MSE/ PREVIOUS MSE
-                if(mse < mseMap[modelObject.name]):
+                if modelObject.estAgain:
+
+                    paramStringNew = ''
+                    paramStringOld = ''
+                    oldParams = modelMap[modelObject.name]
+                    subParamMap = paramMap[modelObject.name]
+                    numParams = len(arrToOptimize)
+                    
+                    for i in range(numParams):
+                        parNew = subParamMap[i] + "=" + "{:.4e}".format(estimatesdParams[i]) + ", "
+                        parOld = subParamMap[i] + "=" + "{:.4e}".format(oldParams[i]) + ", "
+                        paramStringNew += parNew
+                        paramStringOld += parOld
+                    
+                    res = askyesno(
+                        title='MSE changed',
+                        message='Old parameters are {}, new parameters are {}. Previous MSE is {}, new MSE is {}. Do you want to continue?'.format(
+                            paramStringOld[:-2],
+                            paramStringNew[:-2],
+                            mseMap[modelObject.name],
+                            mse
+                        )
+                    )
+
+                    if res == True:
+                        mseMap[modelObject.name] = mse
+                        modelMap[modelObject.name] = list(minimizationResults.x)
+                        rootPar.destroy()
+                    if res == False:
+                        rootPar.destroy()
+                else:
+                    
                     mseMap[modelObject.name] = mse
                     modelMap[modelObject.name] = list(minimizationResults.x)
-                else:
+                    modelObject.estAgain = True
                     rootPar.destroy()
-                    showinfo(title="MSE increased", message="MSE has increased over the given model parameters")
-                
-                # print(mse < mseMap[modelObject.name])
 
                 # CHANGING BUTTON COLOR
                 style.configure('YamadaIm1.TButton', background='green')
@@ -799,14 +945,42 @@ def compute(path):
                 estimatesdParams = list(minimizationResults.x)
                 mse = np.round_(modelObject.mse(estimatesdParams, X, Y), decimals=4)
                 # CHECKING WETHER CALCULATED MSE IS SMALLER THAN THE STORED MSE/ PREVIOUS MSE
-                if(mse < mseMap[modelObject.name]):
+                if modelObject.estAgain:
+
+                    paramStringNew = ''
+                    paramStringOld = ''
+                    oldParams = modelMap[modelObject.name]
+                    subParamMap = paramMap[modelObject.name]
+                    numParams = len(arrToOptimize)
+                    
+                    for i in range(numParams):
+                        parNew = subParamMap[i] + "=" + "{:.4e}".format(estimatesdParams[i]) + ", "
+                        parOld = subParamMap[i] + "=" + "{:.4e}".format(oldParams[i]) + ", "
+                        paramStringNew += parNew
+                        paramStringOld += parOld
+                    
+                    res = askyesno(
+                        title='MSE changed',
+                        message='Old parameters are {}, new parameters are {}. Previous MSE is {}, new MSE is {}. Do you want to continue?'.format(
+                            paramStringOld[:-2],
+                            paramStringNew[:-2],
+                            mseMap[modelObject.name],
+                            mse
+                        )
+                    )
+
+                    if res == True:
+                        mseMap[modelObject.name] = mse
+                        modelMap[modelObject.name] = list(minimizationResults.x)
+                        rootPar.destroy()
+                    if res == False:
+                        rootPar.destroy()
+                else:
+                    
                     mseMap[modelObject.name] = mse
                     modelMap[modelObject.name] = list(minimizationResults.x)
-                else:
+                    modelObject.estAgain = True
                     rootPar.destroy()
-                    showinfo(title="MSE increased", message="MSE has increased over the given model parameters")
-                
-                # print(mse < mseMap[modelObject.name])
 
                 # CHANGING BUTTON COLOR
                 style.configure('YamadaIm2.TButton', background='green')
@@ -865,14 +1039,42 @@ def compute(path):
                 estimatesdParams = list(minimizationResults.x)
                 mse = np.round_(modelObject.mse(estimatesdParams, X, Y), decimals=4)
                 # CHECKING WETHER CALCULATED MSE IS SMALLER THAN THE STORED MSE/ PREVIOUS MSE
-                if(mse < mseMap[modelObject.name]):
+                if modelObject.estAgain:
+
+                    paramStringNew = ''
+                    paramStringOld = ''
+                    oldParams = modelMap[modelObject.name]
+                    subParamMap = paramMap[modelObject.name]
+                    numParams = len(arrToOptimize)
+                    
+                    for i in range(numParams):
+                        parNew = subParamMap[i] + "=" + "{:.4e}".format(estimatesdParams[i]) + ", "
+                        parOld = subParamMap[i] + "=" + "{:.4e}".format(oldParams[i]) + ", "
+                        paramStringNew += parNew
+                        paramStringOld += parOld
+                    
+                    res = askyesno(
+                        title='MSE changed',
+                        message='Old parameters are {}, new parameters are {}. Previous MSE is {}, new MSE is {}. Do you want to continue?'.format(
+                            paramStringOld[:-2],
+                            paramStringNew[:-2],
+                            mseMap[modelObject.name],
+                            mse
+                        )
+                    )
+
+                    if res == True:
+                        mseMap[modelObject.name] = mse
+                        modelMap[modelObject.name] = list(minimizationResults.x)
+                        rootPar.destroy()
+                    if res == False:
+                        rootPar.destroy()
+                else:
+                    
                     mseMap[modelObject.name] = mse
                     modelMap[modelObject.name] = list(minimizationResults.x)
-                else:
+                    modelObject.estAgain = True
                     rootPar.destroy()
-                    showinfo(title="MSE increased", message="MSE has increased over the given model parameters")
-                
-                # print(mse < mseMap[modelObject.name])
 
                 # CHANGING BUTTON COLOR
                 style.configure('YamadaExpo.TButton', background='green')
@@ -936,14 +1138,42 @@ def compute(path):
                 estimatesdParams = list(minimizationResults.x)
                 mse = np.round_(modelObject.mse(estimatesdParams, X, Y), decimals=4)
                 # CHECKING WETHER CALCULATED MSE IS SMALLER THAN THE STORED MSE/ PREVIOUS MSE
-                if(mse < mseMap[modelObject.name]):
+                if modelObject.estAgain:
+
+                    paramStringNew = ''
+                    paramStringOld = ''
+                    oldParams = modelMap[modelObject.name]
+                    subParamMap = paramMap[modelObject.name]
+                    numParams = len(arrToOptimize)
+                    
+                    for i in range(numParams):
+                        parNew = subParamMap[i] + "=" + "{:.4e}".format(estimatesdParams[i]) + ", "
+                        parOld = subParamMap[i] + "=" + "{:.4e}".format(oldParams[i]) + ", "
+                        paramStringNew += parNew
+                        paramStringOld += parOld
+                    
+                    res = askyesno(
+                        title='MSE changed',
+                        message='Old parameters are {}, new parameters are {}. Previous MSE is {}, new MSE is {}. Do you want to continue?'.format(
+                            paramStringOld[:-2],
+                            paramStringNew[:-2],
+                            mseMap[modelObject.name],
+                            mse
+                        )
+                    )
+
+                    if res == True:
+                        mseMap[modelObject.name] = mse
+                        modelMap[modelObject.name] = list(minimizationResults.x)
+                        rootPar.destroy()
+                    if res == False:
+                        rootPar.destroy()
+                else:
+                    
                     mseMap[modelObject.name] = mse
                     modelMap[modelObject.name] = list(minimizationResults.x)
-                else:
+                    modelObject.estAgain = True
                     rootPar.destroy()
-                    showinfo(title="MSE increased", message="MSE has increased over the given model parameters")
-                
-                # print(mse < mseMap[modelObject.name])
 
                 # CHANGING BUTTON COLOR
                 style.configure('Vtub.TButton', background='green')
@@ -1010,14 +1240,42 @@ def compute(path):
                 estimatesdParams = list(minimizationResults.x)
                 mse = np.round_(modelObject.mse(estimatesdParams, X, Y), decimals=4)
                 # CHECKING WETHER CALCULATED MSE IS SMALLER THAN THE STORED MSE/ PREVIOUS MSE
-                if(mse < mseMap[modelObject.name]):
+                if modelObject.estAgain:
+
+                    paramStringNew = ''
+                    paramStringOld = ''
+                    oldParams = modelMap[modelObject.name]
+                    subParamMap = paramMap[modelObject.name]
+                    numParams = len(arrToOptimize)
+                    
+                    for i in range(numParams):
+                        parNew = subParamMap[i] + "=" + "{:.4e}".format(estimatesdParams[i]) + ", "
+                        parOld = subParamMap[i] + "=" + "{:.4e}".format(oldParams[i]) + ", "
+                        paramStringNew += parNew
+                        paramStringOld += parOld
+                    
+                    res = askyesno(
+                        title='MSE changed',
+                        message='Old parameters are {}, new parameters are {}. Previous MSE is {}, new MSE is {}. Do you want to continue?'.format(
+                            paramStringOld[:-2],
+                            paramStringNew[:-2],
+                            mseMap[modelObject.name],
+                            mse
+                        )
+                    )
+
+                    if res == True:
+                        mseMap[modelObject.name] = mse
+                        modelMap[modelObject.name] = list(minimizationResults.x)
+                        rootPar.destroy()
+                    if res == False:
+                        rootPar.destroy()
+                else:
+                    
                     mseMap[modelObject.name] = mse
                     modelMap[modelObject.name] = list(minimizationResults.x)
-                else:
+                    modelObject.estAgain = True
                     rootPar.destroy()
-                    showinfo(title="MSE increased", message="MSE has increased over the given model parameters")
-                
-                # print(mse < mseMap[modelObject.name])
 
                 # CHANGING BUTTON COLOR
                 style.configure('RMD.TButton', background='green')
@@ -1081,14 +1339,42 @@ def compute(path):
                 estimatesdParams = list(minimizationResults.x)
                 mse = np.round_(modelObject.mse(estimatesdParams, X, Y), decimals=4)
                 # CHECKING WETHER CALCULATED MSE IS SMALLER THAN THE STORED MSE/ PREVIOUS MSE
-                if(mse < mseMap[modelObject.name]):
+                if modelObject.estAgain:
+
+                    paramStringNew = ''
+                    paramStringOld = ''
+                    oldParams = modelMap[modelObject.name]
+                    subParamMap = paramMap[modelObject.name]
+                    numParams = len(arrToOptimize)
+                    
+                    for i in range(numParams):
+                        parNew = subParamMap[i] + "=" + "{:.4e}".format(estimatesdParams[i]) + ", "
+                        parOld = subParamMap[i] + "=" + "{:.4e}".format(oldParams[i]) + ", "
+                        paramStringNew += parNew
+                        paramStringOld += parOld
+                    
+                    res = askyesno(
+                        title='MSE changed',
+                        message='Old parameters are {}, new parameters are {}. Previous MSE is {}, new MSE is {}. Do you want to continue?'.format(
+                            paramStringOld[:-2],
+                            paramStringNew[:-2],
+                            mseMap[modelObject.name],
+                            mse
+                        )
+                    )
+
+                    if res == True:
+                        mseMap[modelObject.name] = mse
+                        modelMap[modelObject.name] = list(minimizationResults.x)
+                        rootPar.destroy()
+                    if res == False:
+                        rootPar.destroy()
+                else:
+                    
                     mseMap[modelObject.name] = mse
                     modelMap[modelObject.name] = list(minimizationResults.x)
-                else:
+                    modelObject.estAgain = True
                     rootPar.destroy()
-                    showinfo(title="MSE increased", message="MSE has increased over the given model parameters")
-                
-                # print(mse < mseMap[modelObject.name])
 
                 # CHANGING BUTTON COLOR
                 style.configure('Changs.TButton', background='green')
@@ -1141,19 +1427,19 @@ def compute(path):
         modelsLabel = Label(canvas, text="Models")
         model1 = Button(canvas, text='GO Model', style='GO.TButton', command=lambda: goModelParamEst(gomodel))
         model2 = Button(canvas, text="Yamada Rayleigh", style='YamadaRay.TButton', command=lambda: yamadaRayleighParamEst(yamadaR))
-        model3 = Button(canvas, text="Delayed S", style='Delayed.TButton', command=lambda: delayedSParamEst(delayedS))
-        model4 = Button(canvas, text="Inflection S", style='Inflection.TButton', command=lambda: inflectionSParamEst(inflectionS))
-        model5 = Button(canvas, text="Yamada Imperfect 1", style='YamadaIm1.TButton', command=lambda: yamadaImperfect1ParamEst(yamadaImperfect1))
-        model6 = Button(canvas, text="Yamada Imperfect 2", style='YamadaIm2.TButton', command=lambda: yamadaImperfect2ParamEst(yamadaImperfect2))
-        model7 = Button(canvas, text="Yamada Exponential", style='YamadaExpo.TButton', command=lambda: yamadaExponentialParamEst(yamadaExponential))
-        model8 = Button(canvas, text="Vtub Shaped", style='Vtub.TButton', command=lambda: vtubParamEst(vtub))
-        model9 = Button(canvas, text="RMD", style='RMD.TButton', command=lambda: rmdParamEst(rmd))
-        model10 = Button(canvas, text="Chang et al\'s", style='Changs.TButton', command=lambda: changParamEst(changs))
+        model3 = Button(canvas, text="Delayed-S shaped model", style='Delayed.TButton', command=lambda: delayedSParamEst(delayedS))
+        model4 = Button(canvas, text="Inflection-S shaped model", style='Inflection.TButton', command=lambda: inflectionSParamEst(inflectionS))
+        model5 = Button(canvas, text="Yamada Imperfect 1 model", style='YamadaIm1.TButton', command=lambda: yamadaImperfect1ParamEst(yamadaImperfect1))
+        model6 = Button(canvas, text="Yamada Imperfect 2 model", style='YamadaIm2.TButton', command=lambda: yamadaImperfect2ParamEst(yamadaImperfect2))
+        model7 = Button(canvas, text="Yamada Exponential model", style='YamadaExpo.TButton', command=lambda: yamadaExponentialParamEst(yamadaExponential))
+        model8 = Button(canvas, text="Vtub Shaped model", style='Vtub.TButton', command=lambda: vtubParamEst(vtub))
+        model9 = Button(canvas, text="RMD model", style='RMD.TButton', command=lambda: rmdParamEst(rmd))
+        model10 = Button(canvas, text="Chang et al\'s model", style='Changs.TButton', command=lambda: changParamEst(changs))
 
         # COMPUTATION BUTTONS
-        computationLabel = Label(canvas, text="Calculation of Model Parameters & Criterias")
-        displayParameters = Button(canvas, text="Estimated Model Parameters", command=lambda: display())
-        calculateCriteria = Button(canvas, text="Calculate Criterias", command=lambda: computeC(path))
+        computationLabel = Label(canvas, text="Calculation of Model Parameters & Criteria")
+        displayParameters = Button(canvas, text="Click to view estimated model parameters", command=lambda: display())
+        calculateCriteria = Button(canvas, text="Click to calculate ranking criteria", command=lambda: computeC(path))
 
         # ADDING PREVIOUSLY CREATED BUTTONS
         modelsLabel.place(relx=0.245, rely=0.01, relheight=0.05)
