@@ -1,4 +1,3 @@
-from os import name
 from tkinter import *
 from tkinter.ttk import *
 from tkinter.messagebox import *
@@ -9,37 +8,43 @@ from scipy.optimize import minimize
 
 #------------------------------------------DATASET LOADER AND VIEWER--------------------------------------------
 # SUBROUTINE TO LOAD DATA
-def loadData(path, stringvar, loaded):
+def loadData(path, pathvar, dep, depvar, indep, indepvar, loaded):
     try:
         data = pd.read_csv(path)
-        stringvar.set(path)
-        loaded.set(True)
-        showinfo(title='Load successful', message='The dataset has been loaded successfuly.')
+        cols = list(data.columns)
+        if dep in cols and indep in cols:
+            depvar.set(dep)
+            indepvar.set(indep)
+            pathvar.set(path)
+            showinfo(title='Load successful', message='The dataset has been loaded successfully.')
+            loaded.set(True)
+        else:
+            showerror(title='Incorrect variables', message='The dependent and independent variables entered are incorrect. Please try again.')
+
     except FileNotFoundError or PermissionError:
         return showerror(title="Incorrect path", message='The path entered does not exist. Please make sure to enter correct path.')
 
 # WINDOW TO VIEW DATA
-def viewData(path):
+def viewData(path, dep, indep):
     #checking if the path entered or not
     if loaded.get():
-        data = pd.read_csv(f'{path}')   
+        data = pd.read_csv(f'{path}')
+        data = data[[indep, dep]].copy() 
 
         rootView = Toplevel(root)
         rootView.title('Dataset')
-        rootView.geometry('620x250')
+        rootView.geometry('430x230')
         rootView.resizable(False, False)
         
         tree = Treeview(rootView, show='headings')
 
         # define columns
-        tree['columns'] = ('month', 'faults', 'cdf')
-        tree.column('month', anchor=CENTER)
-        tree.column('faults', anchor=CENTER)
+        tree['columns'] = ('time', 'cdf')
+        tree.column('time', anchor=CENTER)
         tree.column('cdf', anchor=CENTER)
         # define headings
-        tree.heading('month', text='Month', anchor=CENTER)
-        tree.heading('faults', text='Faults', anchor=CENTER)
-        tree.heading('cdf', text='Cummulative Faults', anchor=CENTER)
+        tree.heading('time', text=f'{indep}', anchor=CENTER)
+        tree.heading('cdf', text=f'{dep}', anchor=CENTER)
         # add data to the treeview
         for i in range(len(data)):
             tree.insert('', END, values=tuple(data.loc[i]))
@@ -99,7 +104,7 @@ def display():
     pass
 
 # THIS ROUTINE IS TO CALCULATE RANKS FOR MODELS
-def computeR(path):
+def computeR(path, dep, indep):
     rootR = Toplevel(root)
     rootR.title("Techniques")
     rootR.geometry("250x200")
@@ -120,8 +125,8 @@ def computeR(path):
             else:
                 # GETTING THE DATA FROM DATASET IN ORDER TO CALCULATE PERFORMANCE CRITERIA
                 dataset = pd.read_csv(path)
-                X = dataset['Time']
-                Y = dataset['CDF']
+                X = dataset[f'{indep}']
+                Y = dataset[f'{dep}']
 
                 # FOR CREATING ENTRIES IN data:
                 rootRank = Toplevel(root)
@@ -130,7 +135,7 @@ def computeR(path):
 
                 modelRoutines = [
                     gomodel,
-                    yamadaR,
+                    pnz,
                     delayedS,
                     inflectionS,
                     yamadaImperfect1,
@@ -198,7 +203,7 @@ def computeR(path):
                 criteria_map = {
                 }
 
-                stringCriterias = ['mse', 'mae', 'r2', 'adjr2','aic', 'pp', 'meop', 'theil',]
+                stringCriterias = ['mse', 'mae', 'r2', 'adjr2','aic', 'bic', 'pc', 'pp', 'meop', 'theil',]
                 for i in range(8):
                     cr = stringCriterias[i]
                     criteria_map[cr] = v[:, i]
@@ -207,7 +212,7 @@ def computeR(path):
                     print(i, criteria_map[i])
 
                 maximizer = ['r2', 'adjr2']
-                minimizer = ['mse', 'mae', 'pp', 'meop', 'aic', 'theil']
+                minimizer = ['mse', 'mae', 'pp', 'meop', 'aic', 'theil', 'bic', 'pp']
 
             
                 print()
@@ -243,7 +248,6 @@ def computeR(path):
                 # final relative closeness results
                 c = sneg / (spos + sneg)
 
-                # print(c)
                 print()
 
                 # ranking the models
@@ -266,7 +270,6 @@ def computeR(path):
                 # CALCULATED THE RANKS -----------------------------------------------
 
                 modelsWithRank = []
-                # criteriasWithRank = np.append(cdata, rankArr, 1)
 
                 for i in range(len(rankArr)):
                     row = [data[i][0], rankArr[i][0]]
@@ -307,7 +310,7 @@ def computeR(path):
     rootR.mainloop()
 
 # THIS ROUTINE HERE IS TO CALCULATE ALL CRITERIAS FOR ALL MODELS
-def computeC(path):
+def computeC(path, dep, indep):
 
     data = []
     # CHECKING IF MODEL PARAMETERS ARE EVEN ENTERED BY THE USER OR NOT, IF THEY ARE THE DATA LIST IS POPULATED
@@ -322,18 +325,18 @@ def computeC(path):
     else:
         # GETTING THE DATA FROM DATASET IN ORDER TO CALCULATE PERFORMANCE CRITERIA
         dataset = pd.read_csv(path)
-        X = dataset['Time']
-        Y = dataset['CDF']
+        X = dataset[f'{indep}']
+        Y = dataset[f'{dep}']
 
         # FOR CREATING ENTRIES IN data:
         rootCriteria = Toplevel(root)
         rootCriteria.title("Criteria Results")
-        rootCriteria.geometry("995x300")
+        rootCriteria.geometry("1250x300")
         rootCriteria.resizable(False, False)
 
         modelRoutines = [
             gomodel,
-            yamadaR,
+            pnz,
             delayedS,
             inflectionS,
             yamadaImperfect1,
@@ -358,22 +361,28 @@ def computeC(path):
                     adr = model.adrsquare(params, X, Y)
                     pp = model.PP(params, X, Y)             # IF ANY PROBLEM OCCURS IT IS IN PP, AIC, MEOP or TS  
                     aic = model.aic(params, X, Y)
+                    bic = model.bic(params, X, Y)
+                    pc = model.pc(params, X, Y)
                     meop = model.meop(params, X, Y)
-                    theil = model.theil(params, X, Y) 
+                    theil = model.theil(params, X, Y)
 
-                    criterias = [mse, mae, r2, adr, aic, pp, meop, theil] # WHILE ADDING COLUMNS TO THE TREEVIEW MAKE SURE TO ENTER THE COLUMNS IN THIS ORDER OF CRITERIA ONLY
+                    criterias = [mse, mae, r2, adr, aic, bic, pc, pp, meop, theil] # WHILE ADDING COLUMNS TO THE TREEVIEW MAKE SURE TO ENTER THE COLUMNS IN THIS ORDER OF CRITERIA ONLY
                     break
             criterias.insert(0, selected[0])
             criteriaData.append(criterias)
 
         # ADDING TO TABLE
-        columns = ('models', 'mse', 'mae', 'rsquare', 'adrsquare', 'aic', 'pp', 'meop', 'theil')
-        columnsText = ('Models', 'MSE', 'MAE', 'R Squared', 'Adj. R Squared', 'AIC', 'PP', 'MEOP', 'TS')
+        columns = ('models', 'mse', 'mae', 'rsquare', 'adrsquare', 'aic', 'bic', 'pc', 'pp', 'meop', 'theil')
+        columnsText = ('Models', 'MSE', 'MAE', 'R\u00b2', 'Adj. R\u00b2', 'AIC', 'BIC', 'PC', 'PP', 'MEOP', 'TS')
         tree = Treeview(rootCriteria, columns=columns, show='headings')
 
         for i in range(len(columns)):
-            tree.heading(columns[i], text=columnsText[i])
-            tree.column(columns[i], minwidth=110, width=110)
+            if i == 0:
+                tree.heading(columns[i], text=columnsText[i], anchor=CENTER)
+                tree.column(columns[i], minwidth=145, width=145, anchor=CENTER)
+            else:
+                tree.heading(columns[i], text=columnsText[i], anchor=CENTER)
+                tree.column(columns[i], minwidth=110, width=110, anchor=CENTER)
         
 
         for i in criteriaData:
@@ -387,18 +396,17 @@ def computeC(path):
         tree.place(relx=0, rely=0)
 
         # RANK BUTTON
-        rankButton = Button(rootCriteria, text="Click to calculate rank of models", command=lambda: computeR(path))
+        rankButton = Button(rootCriteria, text="Click to calculate rank of models", command=lambda: computeR(path, dep, indep))
         rankButton.place(relx=0.375, rely=0.775, relwidth=0.25, relheight=0.2)
         rootCriteria.mainloop()
 
 # I DONT KNOW WHY I NAMED IT COMPUTE BUT ITS JUST THE MODEL PARAMETER ESTIMATOR
-def compute(path):
+def compute(path, dep, indep):
 
     if loaded.get():
         data = pd.read_csv(path)
-
-        X = data['Time']
-        Y = data['CDF']
+        X = data[f'{indep}']
+        Y = data[f'{dep}']
 
         # MODEL AND ESTIMATED PARAMETER HASHMAP
         global modelMap
@@ -406,11 +414,11 @@ def compute(path):
         global mseMap
         modelMap = {
             'GO model': None,
-            'Delayed-S Shaped model': None,
-            'Inflection-S Shaped model': None,
-            'Yamada Rayleigh model': None,
+            'Delayed S-Shaped model': None,
+            'Inflection S-Shaped model': None,
+            'PNZ model': None,
             'Yamada Imperfect 1 model': None,
-            'Vtub Shaped model': None,
+            'Vtub-Shaped model': None,
             'Yamada Imperfect 2 model': None,
             'RMD model`': None,
             'Yamada Exponential model': None,
@@ -419,26 +427,26 @@ def compute(path):
 
         mseMap = {
             'GO model': np.inf,
-            'Delayed-S Shaped model': np.inf,
-            'Inflection-S Shaped model': np.inf,
-            'Yamada Rayleigh model': np.inf,
+            'Delayed S-Shaped model': np.inf,
+            'Inflection S-Shaped model': np.inf,
+            'PNZ model': np.inf,
             'Yamada Imperfect 1 model': np.inf,
             'Yamada Imperfect 2 model': np.inf,
             'Yamada Exponential model': np.inf,
-            'Vtub Shaped model': np.inf,
+            'Vtub-Shaped model': np.inf,
             'RMD model': np.inf,
             'Chang et al\'s model': np.inf
         }
 
         paramMap = {
             'GO model': ['a', 'b'],                                          # a, b
-            'Delayed-S Shaped model': ['a', 'b'],                            # a, b
-            'Inflection-S Shaped model': ['a', 'b', '\u03B2'],               # a, b, beta
-            'Yamada Rayleigh model': ['a', '\u03B1', '\u03B2', '\u03B3'],    # a, alpha, beta, gamma
+            'Delayed S-Shaped model': ['a', 'b'],                            # a, b
+            'Inflection S-Shaped model': ['a', 'b', '\u03B2'],               # a, b, beta
+            'PNZ model': ['a', 'b', '\u03B1', '\u03B2'],                     # a, b, alpha, beta
             'Yamada Imperfect 1 model': ['a', 'b', '\u03B1'],                # a, b, alpha
             'Yamada Imperfect 2 model': ['a', 'b', '\u03B1'],                # a, b, alpha
             'Yamada Exponential model': ['a', '\u03B1', '\u03B2', '\u03B3'], # a, alpha, beta, gamma
-            'Vtub Shaped model': ['a', 'b', '\u03B1', '\u03B2', 'N'],        # a, b, alpha, beta, N 
+            'Vtub-Shaped model': ['a', 'b', '\u03B1', '\u03B2', 'N'],        # a, b, alpha, beta, N 
             'RMD model': ['a', 'b', '\u03B1', '\u03B2'],                     # a, b, alpha, beta 
             'Chang et al\'s model':['a', 'b', '\u03B1', '\u03B2', 'N']       # a, b, alpha, beta, N
         }
@@ -737,9 +745,9 @@ def compute(path):
             rootPar.mainloop()
 
         # THIS IS FOR MODEL 4 ---> YAMADA RAYLEIGH
-        def yamadaRayleighParamEst(modelObject):    
+        def pnzParamEst(modelObject):    
             rootPar = Toplevel(rootComp)
-            rootPar.title("Yamada Rayleigh Model Initial Parameters")
+            rootPar.title("PNZ Model Initial Parameters")
             rootPar.geometry("400x250")
 
             def _sub():
@@ -809,9 +817,9 @@ def compute(path):
                     showinfo(title='Model Removal', message="Error occured while removing model")
 
             param1Label = Label(rootPar, text="a (cummulative faults)")      # THIS IS PARAMETER 'a' FOR YAMADA RAYLEIGH MODEL
-            param2Label = Label(rootPar, text="\u03B1 (total expenditure)") # THIS IS PARAMETER 'alpha' FOR YAMADA RAYLEIGH MODEL
-            param3Label = Label(rootPar, text="\u03B2 (scale parameter)") # THIS IS PARAMETER 'beta' FOR YAMADA RAYLEIGH MODEL
-            param4Label = Label(rootPar, text="\u03B3 (confidence level)") # THIS IS PARAMETER 'gamma' FOR YAMADA RAYLEIGH MODEL
+            param2Label = Label(rootPar, text="b (detection rate)") # THIS IS PARAMETER 'alpha' FOR YAMADA RAYLEIGH MODEL
+            param3Label = Label(rootPar, text="\u03B1 (total expenditure)") # THIS IS PARAMETER 'beta' FOR YAMADA RAYLEIGH MODEL
+            param4Label = Label(rootPar, text="\u03B2 (scale parameter)") # THIS IS PARAMETER 'gamma' FOR YAMADA RAYLEIGH MODEL
             param1 = Entry(rootPar, width=35)
             param2 = Entry(rootPar, width=35)
             param3 = Entry(rootPar, width=35)
@@ -1426,20 +1434,20 @@ def compute(path):
         # ADDING BUTTONS TO INPUT MODEL PARAMETERS
         modelsLabel = Label(canvas, text="Models")
         model1 = Button(canvas, text='GO Model', style='GO.TButton', command=lambda: goModelParamEst(gomodel))
-        model2 = Button(canvas, text="Yamada Rayleigh", style='YamadaRay.TButton', command=lambda: yamadaRayleighParamEst(yamadaR))
-        model3 = Button(canvas, text="Delayed-S shaped model", style='Delayed.TButton', command=lambda: delayedSParamEst(delayedS))
-        model4 = Button(canvas, text="Inflection-S shaped model", style='Inflection.TButton', command=lambda: inflectionSParamEst(inflectionS))
+        model2 = Button(canvas, text="PNZ model", style='YamadaRay.TButton', command=lambda: pnzParamEst(pnz))
+        model3 = Button(canvas, text="Delayed S-shaped model", style='Delayed.TButton', command=lambda: delayedSParamEst(delayedS))
+        model4 = Button(canvas, text="Inflection S-shaped model", style='Inflection.TButton', command=lambda: inflectionSParamEst(inflectionS))
         model5 = Button(canvas, text="Yamada Imperfect 1 model", style='YamadaIm1.TButton', command=lambda: yamadaImperfect1ParamEst(yamadaImperfect1))
         model6 = Button(canvas, text="Yamada Imperfect 2 model", style='YamadaIm2.TButton', command=lambda: yamadaImperfect2ParamEst(yamadaImperfect2))
         model7 = Button(canvas, text="Yamada Exponential model", style='YamadaExpo.TButton', command=lambda: yamadaExponentialParamEst(yamadaExponential))
-        model8 = Button(canvas, text="Vtub Shaped model", style='Vtub.TButton', command=lambda: vtubParamEst(vtub))
+        model8 = Button(canvas, text="Vtub-Shaped model", style='Vtub.TButton', command=lambda: vtubParamEst(vtub))
         model9 = Button(canvas, text="RMD model", style='RMD.TButton', command=lambda: rmdParamEst(rmd))
         model10 = Button(canvas, text="Chang et al\'s model", style='Changs.TButton', command=lambda: changParamEst(changs))
 
         # COMPUTATION BUTTONS
         computationLabel = Label(canvas, text="Calculation of Model Parameters & Criteria")
         displayParameters = Button(canvas, text="Click to view estimated model parameters", command=lambda: display())
-        calculateCriteria = Button(canvas, text="Click to calculate ranking criteria", command=lambda: computeC(path))
+        calculateCriteria = Button(canvas, text="Click to calculate ranking criteria", command=lambda: computeC(path, dep, indep))
 
         # ADDING PREVIOUSLY CREATED BUTTONS
         modelsLabel.place(relx=0.245, rely=0.01, relheight=0.05)
@@ -1472,26 +1480,44 @@ def main():
 
     root = Tk()
     root.title("SRGM DSS")
-    root.geometry("750x250")
+    root.geometry("750x350")
 
     path = StringVar()
+    dependentVar = StringVar()
+    independentVar = StringVar()
     loaded = BooleanVar(False)
 
-    rootCanvas = Canvas(root, width=750, height=250)
+    rootCanvas = Canvas(root, width=750, height=350)
     rootCanvas.pack()
 
-    modelButton = Button(rootCanvas, text='Models & Computation', command=lambda: compute(pathEntry.get()))
+    modelButton = Button(rootCanvas, text='Models & Computation', command=lambda: compute(pathEntry.get(), dependentEntry.get(), independentEntry.get()))
     pathEntryLabel = Label(rootCanvas, text="Enter path of dataset")
     pathEntry = Entry(rootCanvas, width=22)
-    loadButton = Button(rootCanvas, text='Load Dataset', command=lambda: loadData(pathEntry.get(), path, loaded))
-    viewButton = Button(rootCanvas, text='View Dataset', command=lambda: viewData(pathEntry.get()))
+
+
+    dependentEntryLabel = Label(rootCanvas, text="Enter dependent variable")
+    dependentEntry = Entry(rootCanvas, width=12)
+
+    independentEntryLabel = Label(rootCanvas, text="Enter independent variable")
+    independentEntry = Entry(rootCanvas, width=12)
+
+
+    loadButton = Button(rootCanvas, text='Load Dataset', command=lambda: loadData(pathEntry.get(), path, dependentEntry.get(), dependentVar, independentEntry.get(), independentVar, loaded))
+    viewButton = Button(rootCanvas, text='View Dataset', command=lambda: viewData(pathEntry.get(), dependentEntry.get(), independentEntry.get()))
     closeButton = Button(rootCanvas, text='Close', command=root.destroy)
     # PLACING THE BUTTONS AND LABEL
     modelButton.place(relx=0.10, rely=0.35, relwidth=0.35, relheight=0.2)
-    pathEntryLabel.place(relx=0.55, rely=0.15)
-    pathEntry.place(relx=0.72, rely=0.15)
-    loadButton.place(relx=0.55, rely=0.25, relwidth=0.35, relheight=0.2)
-    viewButton.place(relx=0.55, rely=0.45, relwidth=0.35, relheight=0.2)
+    
+    pathEntryLabel.place(relx=0.55, rely=0.09)
+    pathEntry.place(relx=0.72, rely=0.09)
+    dependentEntryLabel.place(relx=0.55, rely=0.15)
+    dependentEntry.place(relx=0.8, rely=0.15)
+    independentEntryLabel.place(relx=0.55, rely=0.21)
+    independentEntry.place(relx=0.8, rely=0.21)
+
+    loadButton.place(relx=0.55, rely=0.27, relwidth=0.35, relheight=0.2)
+    viewButton.place(relx=0.55, rely=0.47, relwidth=0.35, relheight=0.2)
+
     closeButton.place(relx=0.35, rely=0.75, relwidth=0.25, relheight=0.15)
 
     root.mainloop()

@@ -7,7 +7,7 @@ class GO:
     def model(self, a, b, t):
         '''Definition of GO Model'''
         return a*(1-np.exp(-b*t))
-    
+
     def OLS(self, C, X, Y):
         '''Ordinary Least Squares function to minimize and get parameters for GO Model'''
         y = self.model(C[0], C[1], X)
@@ -40,7 +40,7 @@ class GO:
         return 1-SSE/TOT
 
     def adrsquare(self, params, X, Y):
-        '''Calculates Adjusted R Squared for GO Model'''
+        '''Calculates Adjusted R Squared for GO Model''' 
         SSE = np.sum((Y - self.model(params[0], params[1], X))**2)
         TOT = np.sum((Y - np.array([np.mean(Y) for _ in range(len(Y))]))**2)
         r2 = SSE/TOT
@@ -58,9 +58,22 @@ class GO:
     def aic(self, params, X, Y):
         '''Calculates AIC for GO Model'''
         n = len(Y)
-        aic = n*np.log(self.mse(params, X, Y)) + 2*len(params)
+        aic = n*np.log(self.OLS(params, X, Y)/n) + 2*len(params)
         return aic
 
+    def bic(self, params, X, Y):
+        '''Calculates BIC for GO Model'''
+        n = len(Y)
+        bic = n*np.log(self.OLS(params, X, Y)/n) + np.log(n)*len(params)
+        return bic
+
+    def pc(self, params, X, Y):
+        '''Calculates PC for GO Model'''
+        p = len(params)
+        n = len(Y)
+        pc = ((n-p)/2)*np.log(self.OLS(params, X, Y)/n) + p*((n-1)/(n-p))
+        return pc
+    
     def meop(self, params, X, Y):
         '''Calculates MEOP for GO Model'''
         y = self.model(params[0], params[1], X)
@@ -77,7 +90,7 @@ class GO:
         return  (numero/denom)*100
 
 class DelayedS:
-    name = 'Delayed-S Shaped model'
+    name = 'Delayed S-Shaped model'
     estAgain = False
     def model(self, a, b, t):
         '''Definition of Delayed S Shaped Model'''
@@ -136,8 +149,21 @@ class DelayedS:
     def aic(self, params, X, Y):
         '''Calculates AIC for Delayed S Shaped Model'''
         n = len(Y)
-        aic = n*np.log(self.mse(params, X, Y)) + 2*len(params)
+        aic = n*np.log(self.OLS(params, X, Y)/n) + 2*len(params)
         return aic
+
+    def bic(self, params, X, Y):
+        '''Calculates BIC for Delayed S Shaped Model'''
+        n = len(Y)
+        bic = n*np.log(self.OLS(params, X, Y)/n) + np.log(n)*len(params)
+        return bic
+
+    def pc(self, params, X, Y):
+        '''Calculates PC for Delayed S Shaped Model'''
+        p = len(params)
+        n = len(Y)
+        pc = ((n-p)/2)*np.log(self.OLS(params, X, Y)/n) + p*((n-1)/(n-p))
+        return pc    
 
     def meop(self, params, X, Y):
         '''Calculates MEOP for Delayed S Shaped Model'''
@@ -155,7 +181,7 @@ class DelayedS:
         return  (numero/denom)*100
 
 class InflectionS:
-    name = 'Inflection-S Shaped model'
+    name = 'Inflection S-Shaped model'
     estAgain = False
     def model(self, a, b, beta, t):
         '''Definition of Inflection S Shaped Model'''
@@ -214,8 +240,21 @@ class InflectionS:
     def aic(self, params, X, Y):
         '''Calculates AIC for Inflection S Shaped Model'''
         n = len(Y)
-        aic = n*np.log(self.mse(params, X, Y)) + 2*len(params)
+        aic = n*np.log(self.OLS(params, X, Y)/n) + 2*len(params)
         return aic
+
+    def bic(self, params, X, Y):
+        '''Calculates BIC for Inflection S Shaped Model'''
+        n = len(Y)
+        bic = n*np.log(self.OLS(params, X, Y)/n) + np.log(n)*len(params)
+        return bic
+
+    def pc(self, params, X, Y):
+        '''Calculates PC for Inflection S Shaped Model'''
+        p = len(params)
+        n = len(Y)
+        pc = ((n-p)/2)*np.log(self.OLS(params, X, Y)/n) + p*((n-1)/(n-p))
+        return pc
 
     def meop(self, params, X, Y):
         '''Calculates MEOP for Inflection S Shaped Model'''
@@ -232,15 +271,15 @@ class InflectionS:
         denom = np.sqrt(np.sum(np.square(Y)))
         return  (numero/denom)*100
 
-class YamadaRayleigh:
-    name = 'Yamada Rayleigh model'
+class PNZ:
+    name = 'PNZ model'
     estAgain = False
-    def model(self, a, alp, beta, gam, t):
-        '''Definition of Yamada Rayleigh Model'''
-        return a*(1-np.exp(-gam*alp*(1-np.exp(-beta*t**2/2))))
+    def model(self, a, b, alp, beta, t):
+        '''Definition of PNZ Model'''
+        return (a/(1+beta*np.exp(-b*t)))*( (1-np.exp(-b*t))*(1-alp/b) + alp*t)
 
     def OLS(self, C, X, Y):
-        '''Ordinary Least Squares function to minimize and get parameters for Yamada Rayleigh Model'''
+        '''Ordinary Least Squares function to minimize and get parameters for PNZ Model'''
         x = X
         y = self.model(C[0], C[1], C[2], C[3], x)
         residuals = y-Y
@@ -248,7 +287,7 @@ class YamadaRayleigh:
         return sos
 
     def mse(self, params, X, Y):
-        '''Calculates Mean Squared Error for Yamada Rayleigh Model'''
+        '''Calculates Mean Squared Error for PNZ Model'''
         x = X
         y = self.model(params[0], params[1], params[2], params[3], x)
         residuals = y-Y
@@ -258,7 +297,7 @@ class YamadaRayleigh:
         return mos
 
     def mae(self, params, X, Y):
-        '''Calculates Mean Absolute Error for Yamada Rayleigh Model'''
+        '''Calculates Mean Absolute Error for PNZ Model'''
         x = X
         y = self.model(params[0], params[1], params[2], params[3], x)
         residuals = y-Y
@@ -268,13 +307,13 @@ class YamadaRayleigh:
         return amos
 
     def rsquare(self, params, X, Y):
-        '''Calculates R Squared for Yamada Rayleigh Model'''
+        '''Calculates R Squared for PNZ Model'''
         SSE = np.sum((Y - self.model(params[0], params[1], params[2], params[3], X))**2)
         TOT = np.sum((Y - np.array([np.mean(Y) for _ in range(len(Y))]))**2)
         return 1-SSE/TOT
     
     def adrsquare(self, params, X, Y):
-        '''Calculates Adjusted R Squared for Yamada Rayleigh Model'''
+        '''Calculates Adjusted R Squared for PNZ Model'''
         SSE = np.sum((Y - self.model(params[0], params[1], params[2], params[3], X))**2)
         TOT = np.sum((Y - np.array([np.mean(Y) for _ in range(len(Y))]))**2)
         r2 = SSE/TOT
@@ -284,19 +323,32 @@ class YamadaRayleigh:
         return adr
     
     def PP(self, params, X, Y):
-        '''Calculates Predictive Power for Yamada Rayleigh Model'''
+        '''Calculates Predictive Power for PNZ Model'''
         y = self.model(params[0], params[1], params[2], params[3], X)
         pp = np.sum(((y-Y)/Y)**2)
         return pp
     
     def aic(self, params, X, Y):
-        '''Calculates AIC for Yamada Rayleigh Model'''
+        '''Calculates AIC for PNZ Model'''
         n = len(Y)
-        aic = n*np.log(self.mse(params, X, Y)) + 2*len(params)
+        aic = n*np.log(self.OLS(params, X, Y)/n) + 2*len(params)
         return aic
 
+    def bic(self, params, X, Y):
+        '''Calculates BIC for PNZ Model'''
+        n = len(Y)
+        bic = n*np.log(self.OLS(params, X, Y)/n) + np.log(n)*len(params)
+        return bic
+
+    def pc(self, params, X, Y):
+        '''Calculates PC for PNZ Model'''
+        p = len(params)
+        n = len(Y)
+        pc = ((n-p)/2)*np.log(self.OLS(params, X, Y)/n) + p*((n-1)/(n-p))
+        return pc
+
     def meop(self, params, X, Y):
-        '''Calculates MEOP for Yamada Rayleigh Model'''
+        '''Calculates MEOP for PNZ Model'''
         y = self.model(params[0], params[1], params[2], params[3], X)
         residuals = y-Y
         adiff = np.sum(np.abs(residuals))
@@ -304,7 +356,7 @@ class YamadaRayleigh:
         return adiff / denom
     
     def theil(self, params, X, Y):
-        '''Calculates Theil Index for Yamada Rayleigh Model'''
+        '''Calculates Theil Index for PNZ Model'''
         residuals = np.square(self.model(params[0], params[1], params[2], params[3], X) - Y)
         numero = np.sqrt(np.sum(residuals))
         denom = np.sqrt(np.sum(np.square(Y)))
@@ -370,8 +422,21 @@ class YamadaImperfect1:
     def aic(self, params, X, Y):
         '''Calculates AIC for Yamada Imperfect 1 Model'''
         n = len(Y)
-        aic = n*np.log(self.mse(params, X, Y)) + 2*len(params)
+        aic = n*np.log(self.OLS(params, X, Y)/n) + 2*len(params)
         return aic
+    
+    def bic(self, params, X, Y):
+        '''Calculates BIC for Yamada Imperfect 1 Model'''
+        n = len(Y)
+        bic = n*np.log(self.OLS(params, X, Y)/n) + np.log(n)*len(params)
+        return bic
+
+    def pc(self, params, X, Y):
+        '''Calculates PC for Yamada Imperfect 1 Model'''
+        p = len(params)
+        n = len(Y)
+        pc = ((n-p)/2)*np.log(self.OLS(params, X, Y)/n) + p*((n-1)/(n-p))
+        return pc
 
     def meop(self, params, X, Y):
         '''Calculates MEOP for Yamada Imperfect 1 Model'''
@@ -448,8 +513,21 @@ class YamadaImperfect2:
     def aic(self, params, X, Y):
         '''Calculates AIC for Yamada Imperfect 2 Model'''
         n = len(Y)
-        aic = n*np.log(self.mse(params, X, Y)) + 2*len(params)
+        aic = n*np.log(self.OLS(params, X, Y)/n) + 2*len(params)
         return aic
+
+    def bic(self, params, X, Y):
+        '''Calculates BIC for Yamada Imperfect 2 Model'''
+        n = len(Y)
+        bic = n*np.log(self.OLS(params, X, Y)/n) + np.log(n)*len(params)
+        return bic
+
+    def pc(self, params, X, Y):
+        '''Calculates PC for Yamada Imperfect 2 Model'''
+        p = len(params)
+        n = len(Y)
+        pc = ((n-p)/2)*np.log(self.OLS(params, X, Y)/n) + p*((n-1)/(n-p))
+        return pc
 
     def meop(self, params, X, Y):
         '''Calculates MEOP for Yamada Imperfect 2 Model'''
@@ -526,8 +604,21 @@ class YamadaExponential:
     def aic(self, params, X, Y):
         '''Calculates AIC for Yamada Exponential Model'''
         n = len(Y)
-        aic = n*np.log(self.mse(params, X, Y)) + 2*len(params)
+        aic = n*np.log(self.OLS(params, X, Y)/n) + 2*len(params)
         return aic
+
+    def bic(self, params, X, Y):
+        '''Calculates BIC for Yamada Exponential Model'''
+        n = len(Y)
+        bic = n*np.log(self.OLS(params, X, Y)/n) + np.log(n)*len(params)
+        return bic
+
+    def pc(self, params, X, Y):
+        '''Calculates PC for Yamada Exponential Model'''
+        p = len(params)
+        n = len(Y)
+        pc = ((n-p)/2)*np.log(self.OLS(params, X, Y)/n) + p*((n-1)/(n-p))
+        return pc
 
     def meop(self, params, X, Y):
         '''Calculates MEOP for Yamada Exponential Model'''
@@ -545,7 +636,7 @@ class YamadaExponential:
         return  (numero/denom)*100
 
 class Vtub:
-    name = 'Vtub Shaped model'
+    name = 'Vtub-Shaped model'
     estAgain = False
     def model(self, a, b, alp, beta, n, t):
         '''Definition of Vtub Shaped Model'''
@@ -604,8 +695,21 @@ class Vtub:
     def aic(self, params, X, Y):
         '''Calculates AIC for Vtub Shaped Model'''
         n = len(Y)
-        aic = n*np.log(self.mse(params, X, Y)) + 2*len(params)
+        aic = n*np.log(self.OLS(params, X, Y)/n) + 2*len(params)
         return aic
+
+    def bic(self, params, X, Y):
+        '''Calculates BIC for Vtub Shaped Model'''
+        n = len(Y)
+        bic = n*np.log(self.OLS(params, X, Y)/n) + np.log(n)*len(params)
+        return bic
+
+    def pc(self, params, X, Y):
+        '''Calculates PC for Vtub Shaped Model'''
+        p = len(params)
+        n = len(Y)
+        pc = ((n-p)/2)*np.log(self.OLS(params, X, Y)/n) + p*((n-1)/(n-p))
+        return pc
 
     def meop(self, params, X, Y):
         '''Calculates MEOP for Vtub Shaped Model'''
@@ -682,8 +786,21 @@ class RMD:
     def aic(self, params, X, Y):
         '''Calculates AIC for RMD Model'''
         n = len(Y)
-        aic = n*np.log(self.mse(params, X, Y)) + 2*len(params)
+        aic = n*np.log(self.OLS(params, X, Y)/n) + 2*len(params)
         return aic
+
+    def bic(self, params, X, Y):
+        '''Calculates BIC for RMD Model'''
+        n = len(Y)
+        bic = n*np.log(self.OLS(params, X, Y)/n) + np.log(n)*len(params)
+        return bic
+
+    def pc(self, params, X, Y):
+        '''Calculates PC for RMD Model'''
+        p = len(params)
+        n = len(Y)
+        pc = ((n-p)/2)*np.log(self.OLS(params, X, Y)/n) + p*((n-1)/(n-p))
+        return pc
 
     def meop(self, params, X, Y):
         '''Calculates MEOP for RMD Model'''
@@ -760,8 +877,21 @@ class Changs:
     def aic(self, params, X, Y):
         '''Calculates AIC for Chang et al's Model'''
         n = len(Y)
-        aic = n*np.log(self.mse(params, X, Y)) + 2*len(params)
+        aic = n*np.log(self.OLS(params, X, Y)/n) + 2*len(params)
         return aic
+
+    def bic(self, params, X, Y):
+        '''Calculates BIC for Chang et al's Model'''
+        n = len(Y)
+        bic = n*np.log(self.OLS(params, X, Y)/n) + np.log(n)*len(params)
+        return bic
+
+    def pc(self, params, X, Y):
+        '''Calculates PC for Chang et al's Model'''
+        p = len(params)
+        n = len(Y)
+        pc = ((n-p)/2)*np.log(self.OLS(params, X, Y)/n) + p*((n-1)/(n-p))
+        return pc
 
     def meop(self, params, X, Y):
         '''Calculates MEOP for Chang et al's Model'''
@@ -782,7 +912,7 @@ class Changs:
 gomodel = GO()
 delayedS = DelayedS()
 inflectionS = InflectionS()
-yamadaR = YamadaRayleigh()
+pnz = PNZ()
 yamadaImperfect1 = YamadaImperfect1()
 yamadaImperfect2 = YamadaImperfect2()
 yamadaExponential = YamadaExponential()
