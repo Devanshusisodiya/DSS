@@ -95,7 +95,6 @@ def display():
             modelParams.grid(row=i, column=1, padx=25)
 
         rootDisp.mainloop()
-    pass
 
 # THIS ROUTINE IS TO CALCULATE RANKS FOR MODELS
 def computeR(path):
@@ -154,10 +153,12 @@ def computeR(path):
                             adr = model.adrsquare(params, X, Y)
                             pp = model.PP(params, X, Y)             
                             aic = model.aic(params, X, Y)
+                            bic = model.bic(params, X, Y)
+                            pc = model.pc(params, X, Y)
                             meop = model.meop(params, X, Y)
                             theil = model.theil(params, X, Y) 
 
-                            criterias = [mse, mae, r2, adr, aic, pp, meop, theil] # WHILE ADDING COLUMNS TO THE TREEVIEW MAKE SURE TO ENTER THE COLUMNS IN THIS ORDER OF CRITERIA ONLY
+                            criterias = [mse, mae, r2, adr, aic, bic, pc, pp, meop, theil] # WHILE ADDING COLUMNS TO THE TREEVIEW MAKE SURE TO ENTER THE COLUMNS IN THIS ORDER OF CRITERIA ONLY
                             break
                     criterias.insert(0, selected[0])
                     criteriaData.append(criterias)
@@ -185,6 +186,8 @@ def computeR(path):
                 # calculating the weights
                 w = d / np.sum(d)
 
+                print(W)
+
                 # CALCULATED THE WEIGHT MATRIX -----------------------------------------------
                 # CALCULATING THE RANK -------------------------------------------------------
                 y = cdata / np.sqrt(np.sum(cdata**2, axis=0))
@@ -197,8 +200,8 @@ def computeR(path):
                 criteria_map = {
                 }
 
-                stringCriterias = ['mse', 'mae', 'r2', 'adjr2','aic', 'pp', 'meop', 'theil',]
-                for i in range(8):
+                stringCriterias = ['mse', 'mae', 'r2', 'adjr2','aic', 'bic', 'pc', 'pp', 'meop', 'theil',]
+                for i in range(len(stringCriterias)):
                     cr = stringCriterias[i]
                     criteria_map[cr] = v[:, i]
 
@@ -206,7 +209,7 @@ def computeR(path):
                     print(i, criteria_map[i])
 
                 maximizer = ['r2', 'adjr2']
-                minimizer = ['mse', 'mae', 'pp', 'meop', 'aic', 'theil']
+                minimizer = ['mse', 'mae', 'pp', 'meop', 'aic', 'bic', 'pc', 'theil']
 
             
                 print()

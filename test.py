@@ -1,69 +1,55 @@
-from matplotlib.pyplot import axis
-import numpy as np
+from tkinter.ttk import *
+from tkinter import *
+from time import *
+import threading as t
 
-cdata = np.array([
-    [87.9209, 7.28955, 0.92849, 0.92598, 272.59184, 2.21299, 6.93105, 0.1354],
-    [59.14201, 6.38073, 0.95273, 0.9502, 250.79649, 6.84505, 5.96232, 0.11008]
-])
+def main():
+    root = Tk()
+    root.geometry("400x400")
 
-n = cdata.shape[0]
+    pb = Progressbar(
+        root,
+        orient='horizontal',
+        mode='indeterminate',
+        length=100
+    )
 
-# normalizing the weight matrix
-P = cdata / np.sum(cdata, axis=0)
-# calculating the entropy vector
-e = (-1) * np.sum(P * np.log(P), axis=0) / np.log(n)
-# calculating the degree of diversification
-d = 1-e
-# calculating the weights
-w = d / np.sum(d)
+    pb.place(relx=0.5, rely=0.5)
 
-# CALCULATED THE WEIGHT MATRIX -----------------------------------------------
-# CALCULATING THE RANK -------------------------------------------------------
-y = cdata / np.sqrt(np.sum(cdata**2, axis=0))
-v = w * y
+    def delay():
+        from scipy.optimize import dual_annealing
+        import numpy as np
+        import pandas as pd
+        # getting some data
+        data = pd.read_csv("C://dataset12.csv")
+        t = pd.Series(range(1, len(data.Time) + 1))
+        mt = data.CDF
 
-vpos = []
-vneg = []
+        # defining the objective function
 
-criteria_map = {
-}
+        def GO(a, b, t):
+            return a*(1-np.exp(-b*t))
 
-stringCriterias = ['mse', 'mae', 'r2', 'adjr2','aic', 'pp', 'meop', 'theil',]
-for i in range(8):
-    cr = stringCriterias[i]
-    criteria_map[cr] = v[:, i]
-
-# for i in criteria_map:
-#     print(i, criteria_map[i])
-
-maximizer = ['r2', 'adjr2']
-minimizer = ['mse', 'mae', 'pp', 'meop', 'aic', 'theil']
-
-
-# print()
-
-for criteria in criteria_map:
-    if criteria in maximizer:
-        best = np.amax(criteria_map[criteria])
-        worst = np.amin(criteria_map[criteria])
+        def obj(x, t, mt):
+            res = mt - GO(x[0], x[1], t)
+            squared = np.mean(res**2)
+            return squared
         
-        vpos.append(best)
-        vneg.append(worst)
-    if criteria in minimizer:
-        best = np.amin(criteria_map[criteria])
-        worst = np.amax(criteria_map[criteria])
-        
-        vpos.append(best)
-        vneg.append(worst)
+        bounds = [
+            (1000, 1.5e7),
+            (0.1e-4, 0.4e-1)
+        ]
 
-# converting ideal best and ideal worst data to usable form
-vpos = np.array(vpos)
-vneg = np.array(vneg)
+        ret = dual_annealing(obj, args=(t, mt), bounds=bounds, maxiter=1000)
+        print(ret)
 
-print(np.sqrt(np.sum((v - vpos)**2, axis=1)))
-print()
-print(np.sqrt(np.sum((v - vneg)**2, axis=1)))
+    t.Thread(target=delay).start()
+    pb.start()
+    pb.stop()
+    # button = Button(root, text='start', command=pb.start)
+    # button.place(relx=0.5, rely=0.7)
 
+    root.mainloop()
 
 
-input()
+main()

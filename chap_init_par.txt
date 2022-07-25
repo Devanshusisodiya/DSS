@@ -1,0 +1,31 @@
+DS-1 init params
+
+GO Model
+a -> 1600
+b -> 0.001
+
+other same/similar init params
+(1500, 0.001)
+(1000, 0.001)
+
+PNZ Model
+a -> 50
+b -> 0.1
+alpha -> 0.1
+beta -> 0.1
+
+Yamada Imperfect 2 Model
+a -> 600
+b -> 0.01
+alpha -> 0.01
+
+Delayed S-Shaped Model
+a -> 300
+b -> 0.01
+
+Vtub Model
+a -> 1
+b -> 1
+alpha -> 0.1
+beta -> 2
+n -> 600
