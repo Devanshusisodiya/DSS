@@ -1,53 +1,48 @@
+import re
 from tkinter.ttk import *
 from tkinter import *
-from time import *
-import threading as t
 
 def main():
     root = Tk()
-    root.geometry("400x400")
+    root.geometry("300x220")
 
-    pb = Progressbar(
-        root,
-        orient='horizontal',
-        mode='indeterminate',
-        length=100
-    )
+    def getWeights(weightOp):
+        if weightOp.get() == 1:
+            return
+        elif weightOp.get() == 2:
+            return
+        elif weightOp.get() == 3:
+            return
 
-    pb.place(relx=0.5, rely=0.5)
+    def getRanks(rankOp, weightVec):
+        if rankOp.get() == 1:
+            return
+        elif rankOp.get() == 2:
+            return
+    
+    def rankCalc(weightOp, rankOp):
+        weights = getWeights(weightOp)
+        ranks = getRanks(rankOp, weights)
 
-    def delay():
-        from scipy.optimize import dual_annealing
-        import numpy as np
-        import pandas as pd
-        # getting some data
-        data = pd.read_csv("C://dataset12.csv")
-        t = pd.Series(range(1, len(data.Time) + 1))
-        mt = data.CDF
+        rootRank = Tk()
+        rootRank.geometry('200x200')
 
-        # defining the objective function
+        rootRank.mainloop()
 
-        def GO(a, b, t):
-            return a*(1-np.exp(-b*t))
+    weightOp = IntVar()
+    rankOp = IntVar()
 
-        def obj(x, t, mt):
-            res = mt - GO(x[0], x[1], t)
-            squared = np.mean(res**2)
-            return squared
-        
-        bounds = [
-            (1000, 1.5e7),
-            (0.1e-4, 0.4e-1)
-        ]
+    w1 = Radiobutton(root, text='AHP', value=1, variable=weightOp)
+    w2 = Radiobutton(root, text='EWM', value=2, variable=weightOp)
+    r1 = Radiobutton(root, text='CODAS', value=1, variable=rankOp)
+    r2 = Radiobutton(root, text='TOPSIS', value=2, variable=rankOp)
+    submit = Button(root, text='Submit', command=lambda: rankCalc(weightOp, rankOp))
 
-        ret = dual_annealing(obj, args=(t, mt), bounds=bounds, maxiter=1000)
-        print(ret)
-
-    t.Thread(target=delay).start()
-    pb.start()
-    pb.stop()
-    # button = Button(root, text='start', command=pb.start)
-    # button.place(relx=0.5, rely=0.7)
+    w1.grid(row=0, column=0)
+    w2.grid(row=1, column=0)
+    r1.grid(row=0, column=2)
+    r2.grid(row=1, column=2)
+    submit.grid(row=2, column=1)
 
     root.mainloop()
 

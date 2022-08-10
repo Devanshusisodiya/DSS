@@ -101,7 +101,7 @@ class DelayedS:
         x = X
         y = self.model(C[0], C[1], x)
         residuals = y-Y
-        sos = np.sum(residuals**2)
+        sos = np.mean(residuals**2)
         return sos
 
     def mse(self, params, X, Y):
